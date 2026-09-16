@@ -468,7 +468,7 @@ export default function App() {
     streamBuf.current = '';
     clearTimeout(streamFlushTimer.current);
     streamFlushTimer.current = null;
-    clearStreamText();
+    setStreamingText('');
   };
   const countToken = (d) => {
     if (tokRef.current === 0) setPhase('streaming');
