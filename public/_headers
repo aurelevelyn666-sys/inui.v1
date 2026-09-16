@@ -1,0 +1,12 @@
+# Cache policy for static hosts that read this file (Netlify, Cloudflare Pages).
+# Hashed build assets are immutable; index.html must always revalidate so
+# users pick up new deploys immediately; babel.min.js is big and stable.
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/babel.min.js
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
