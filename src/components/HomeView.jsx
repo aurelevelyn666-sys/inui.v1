@@ -317,8 +317,7 @@ export default function HomeView(props) {
           </div>
 
           <p className="text-center text-[11px] text-zinc-400 mt-4">
-            Inui may display inaccurate info, so please double check the response.{' '}
-            <span className="underline">Your Privacy</span> & <span className="underline">Inui</span>
+            Inui may display inaccurate info, so please double check the response.
           </p>
 
           {!hasKey && (

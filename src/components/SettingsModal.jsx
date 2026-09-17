@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Loader2, Check, AlertTriangle, Plus, Trash2, Upload } from 'lucide-react';
 import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
@@ -14,6 +14,15 @@ export default function SettingsModal({ settings, onChange, onClose, initialTab 
   const [skillName, setSkillName] = useState('');
   const [skillText, setSkillText] = useState('');
   const [skillMsg, setSkillMsg] = useState(null);
+
+  // Escape closes (backdrop click and Done already do).
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   const runTest = async () => {
     setTesting(true);

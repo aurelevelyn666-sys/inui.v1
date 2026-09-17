@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { MessagesSquare, PanelsTopLeft, Zap, Blocks, CalendarDays, Users, Settings, Sun, Moon } from 'lucide-react';
+import { MessagesSquare, PanelsTopLeft, Zap, Blocks, Settings, Sun, Moon } from 'lucide-react';
 
 // Slim icon rail on the far left. One active item, a settings
-// popover at the bottom, and the account avatar under it.
+// popover at the bottom. Only destinations that exist are shown —
+// no dead "coming soon" buttons.
 const RAIL_ITEMS = [
   { id: 'chat', icon: MessagesSquare, label: 'Chat' },
   { id: 'builds', icon: Zap, label: 'Builds' },
-  { id: 'templates', icon: Blocks, label: 'Templates' },
-  { id: 'calendar', icon: CalendarDays, label: 'Calendar' },
-  { id: 'team', icon: Users, label: 'Team' }
+  { id: 'templates', icon: Blocks, label: 'Templates' }
 ];
 
 export default function IconRail({ active, onNavigate, dark, onToggleDark, onOpenSettings, accountLabel, canvasReady }) {

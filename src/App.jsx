@@ -24,6 +24,17 @@ const nid = () => 'n' + Date.now().toString(36) + (idc++);
 
 const isLocal = (url) => /localhost|127\.0\.0\.1|192\.168\.|10\.\d+\.|:\d{4,5}/.test(String(url || ''));
 
+// Shared toast bubble (home/builds/templates views). Missing this definition
+// used to crash those views the moment any toast fired.
+function ToastBubble({ toast, onDismiss }) {
+  return (
+    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[#ffffff] border border-black/10 rounded-full px-4 py-2 text-xs shadow-2xl flex items-center gap-2">
+      {toast}
+      <button onClick={onDismiss} className="text-zinc-500 hover:text-black"><X size={12} /></button>
+    </div>
+  );
+}
+
 const CONVO_KEY = 'inui.convos.v1';
 function readConvos() {
   try {
