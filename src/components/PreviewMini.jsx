@@ -84,14 +84,20 @@ export default function PreviewMini({
   // a min-h-screen hero makes content(H) = H + rest, so the frame grows
   // forever. With a stable viewport, 100vh is stable and below-fold content
   // stays reachable via the frame's own scroll.
+  //
+  // Re-subscribes on every return to preview mode: switching to the Code tab
+  // unmounts the viewport div, which fires the old observer once with zeros
+  // and leaves it watching a detached node — without this the frame would
+  // stick at the 200px floor after switching back.
   useEffect(() => {
+    if (mode !== 'preview') return;
     const el = viewportRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => setViewH(el.clientHeight));
     ro.observe(el);
     setViewH(el.clientHeight);
     return () => ro.disconnect();
-  }, []);
+  }, [mode]);
 
   const openTab = () => {
     if (!doc || !doc.srcDoc) return;
