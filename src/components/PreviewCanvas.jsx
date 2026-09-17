@@ -400,7 +400,7 @@ export default function PreviewCanvas(props) {
       )}
 
       {!hintSeen && !selection && !built.error && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-zinc-900 text-white text-[12px] rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl max-w-[92%]">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-zinc-900 text-white text-[12px] rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl max-w-[92%]">
           <MousePointerClick size={13} className="shrink-0" />
           <span className="truncate">Click any element to select it — drag to move, double-click text to edit, right-click for more</span>
           <button
