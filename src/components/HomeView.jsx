@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { Image as ImageIcon, Check, Settings, Share, Plus, Paperclip, Mic, ArrowUp, Zap, FileText, MessageSquare, Layers } from 'lucide-react';
+import { Image as ImageIcon, Check, Paperclip, Mic, ArrowUp, Zap, FileText, MessageSquare, Layers } from 'lucide-react';
 import { filesToAttachments, ACCEPT } from '../lib/attach.js';
 import { TEMPLATES } from '../lib/templates.js';
 
@@ -12,7 +12,7 @@ const PALETTES = [
 ];
 
 export default function HomeView(props) {
-  const { onSubmit, onOpenSettings, hasKey, modelId } = props;
+  const { onSubmit, hasKey, modelId } = props;
   const [value, setValue] = useState('');
   const [attachments, setAttachments] = useState([]);
   const [attachWarn, setAttachWarn] = useState(null);
@@ -102,56 +102,6 @@ export default function HomeView(props) {
       {/* top bar */}
       <div className="h-14 shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5">
         <span className="text-[14px] font-medium text-zinc-800">Inui</span>
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <button
-            onClick={onOpenSettings}
-            title="Configuration"
-            aria-label="Configuration"
-            className="h-8 flex items-center gap-1.5 text-[12px] text-zinc-700 bg-white border border-black/[0.08] rounded-full px-2.5 sm:px-3.5 hover:border-black/20"
-          >
-            <span className="hidden min-[420px]:inline">Configuration</span> <Settings size={12} />
-          </button>
-          <button
-            onClick={() => {
-              try {
-                const url = location.href;
-                if (navigator.share) navigator.share({ title: 'Inui', url });
-                else {
-                  navigator.clipboard.writeText(url);
-                  setAttachWarn('Link copied to clipboard');
-                  clearTimeout(warnTimer.current);
-                  warnTimer.current = setTimeout(() => setAttachWarn(null), 2500);
-                }
-              } catch {
-                /* ignore */
-              }
-            }}
-            className="h-8 flex items-center gap-1.5 text-[12px] text-zinc-700 bg-white border border-black/[0.08] rounded-full px-2.5 sm:px-3.5 hover:border-black/20"
-            title="Share"
-            aria-label="Share"
-          >
-            <span className="hidden min-[420px]:inline">Share</span> <Share size={12} />
-          </button>
-          <button
-            onClick={() => {
-              // Home has no active thread yet — New Chat resets the composer.
-              setValue('');
-              setAttachments([]);
-              setPalette(null);
-              try {
-                recRef.current?.stop();
-              } catch {
-                /* noop */
-              }
-              setMicOn(false);
-            }}
-            className="h-8 flex items-center gap-1.5 text-[12px] font-medium bg-[#101014] text-white rounded-full px-2.5 sm:px-3.5 hover:bg-black"
-            title="Start a new chat"
-            aria-label="Start a new chat"
-          >
-            <span className="hidden min-[420px]:inline">New Chat</span> <Plus size={12} />
-          </button>
-        </div>
       </div>
 
       {/* scroll body */}

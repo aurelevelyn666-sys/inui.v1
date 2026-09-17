@@ -93,14 +93,7 @@ export default function IconRail({ active, onNavigate, dark, onToggleDark, onOpe
         </button>
       </div>
 
-      {/* account */}
-      <button
-        onClick={onOpenSettings}
-        title={accountLabel || 'Account'}
-        className="w-9 h-9 rounded-full bg-zinc-100 border border-black/[0.06] flex items-center justify-center text-[13px] font-semibold text-zinc-600 hover:border-black/15"
-      >
-        {(accountLabel || 'U')[0].toUpperCase()}
-      </button>
+      <div className="flex-1" />
     </div>
   );
 }
