@@ -34,7 +34,14 @@ workspace.
   on existing state).
 - Right: Reload, Open in new tab, **Edit** (→ `setView('canvas')`, existing
   handoff), **Publish ▾**, Close (existing collapse behavior).
-- No Preview/Code tabs (YAGNI).
+- Preview | Code toggle (approved amendment 2026-09-17): Code mode is a
+  read-only viewer — left file tree rendering the FULL project file set
+  (reuse `FileTree`, shared `activeFile` state with the Files tab), right code
+  pane with line numbers + lightweight JSX/CSS highlighting (dependency-free
+  tokenizer: keywords, strings, comments, tags, attributes, numbers) +
+  breadcrumb path + per-file copy (`CopyBtn` pattern) and download
+  (`downloadBlob`). No editing in Code mode (edits stay in the Files-tab
+  textarea and the canvas); no diff/git tabs, no search-in-files.
 
 ## Publish menu
 Dropdown from Publish ▾ with: Download site.html, Export project ZIP, divider,
