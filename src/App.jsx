@@ -595,6 +595,15 @@ export default function App() {
     }
   };
 
+  // Shared LLM routing for every pipeline call: primary model + optional
+  // fallback (same key/URL). The notice hook reports which fallback answered.
+  const llmRoute = (onFallbackModel) => ({
+    baseUrl: settingsRef.current.baseUrl,
+    apiKey: settingsRef.current.apiKey,
+    model: settingsRef.current.modelId,
+    fallbackModel: settingsRef.current.fallbackModelId || undefined,
+    ...(onFallbackModel ? { onFallbackModel } : {})
+  });
   // mirrors for async loops
   const messagesRef = useRef([]);
   const filesRef = useRef(files);
@@ -691,11 +700,13 @@ export default function App() {
       }))
     ];
     let full = '';
+    let fallbackUsed = '';
     try {
       full = await sendChatCompletionRetry({
-        baseUrl: settingsRef.current.baseUrl,
-        apiKey: settingsRef.current.apiKey,
-        model: settingsRef.current.modelId,
+        ...llmRoute((m) => {
+          fallbackUsed = m;
+          addLog('info', 'Primary model failed — retrying once with fallback ' + m);
+        }),
         messages: llmHistory,
         signal: abortRef.current?.signal,
         onToken: countToken
@@ -816,11 +827,13 @@ export default function App() {
           .join('\n')
           .slice(0, 14000);
         let fixFull = '';
+        let repairFallback = '';
         try {
           fixFull = await sendChatCompletionRetry({
-            baseUrl: settingsRef.current.baseUrl,
-            apiKey: settingsRef.current.apiKey,
-            model: settingsRef.current.modelId,
+            ...llmRoute((m) => {
+              repairFallback = m;
+              addLog('info', 'Repair retrying once with fallback ' + m);
+            }),
             expectContent: true,
             messages: [
               {
@@ -859,6 +872,7 @@ export default function App() {
         repairNote = problems.length
           ? 'Self-check: ' + problems.length + ' issue(s) remain after ' + repairs + ' repair pass(es) — open the preview errors or ask for a fix.'
           : 'Self-check: fixed build errors automatically (' + repairs + ' pass(es)).';
+        if (repairFallback) repairNote += ' (repair answered by fallback ' + repairFallback + ')';
       }
     }
     // Preview rebuild phase — visible progress until the canvas settles.
@@ -884,7 +898,7 @@ export default function App() {
     }
     pushMsgs([{
       role: 'assistant',
-      content: (chatText || '(files updated — no text reply)') + (autoNote ? '\n' + autoNote : '') + (repairNote ? '\n' + repairNote : ''),
+      content: (chatText || '(files updated — no text reply)') + (autoNote ? '\n' + autoNote : '') + (repairNote ? '\n' + repairNote : '') + (fallbackUsed ? '\n(answered by fallback model ' + fallbackUsed + ' after the primary failed)' : ''),
       files: paths,
       genStats: finishStats(full),
       ...(paths.length === 0 && !toolCalls.length ? { noFiles: true, raw: full.slice(0, 60000) } : {})
@@ -1025,11 +1039,13 @@ export default function App() {
     // images/files are stored but never sent to the model.
     const lastUser = messagesRef.current[messagesRef.current.length - 1];
     let full = '';
+    let imageFallback = '';
     try {
       full = await sendChatCompletionRetry({
-        baseUrl: settingsRef.current.baseUrl,
-        apiKey: settingsRef.current.apiKey,
-        model: settingsRef.current.modelId,
+        ...llmRoute((m) => {
+          imageFallback = m;
+          addLog('info', 'Primary model failed — retrying once with fallback ' + m);
+        }),
         messages: [
           { role: 'system', content: system },
           ...messagesRef.current.slice(-7, -1).map((m) => ({ role: 'user', content: messageToContent(m, true, 1500) })),
@@ -1080,7 +1096,7 @@ export default function App() {
       const imgs = extractImages(result || '');
       pushMsgs([{
         role: 'assistant',
-        content: (chatText || 'Image ready.') + (imgs.length ? '' : '\nThe tool returned no image URL — see tool result above.'),
+        content: (chatText || 'Image ready.') + (imgs.length ? '' : '\nThe tool returned no image URL — see tool result above.') + (imageFallback ? '\n(answered by fallback model ' + imageFallback + ')' : ''),
         images: imgs,
         genStats: finishStats(full)
       }]);
@@ -1114,10 +1130,20 @@ export default function App() {
     }
   };
   const onSkipTool = (id) => setPendingTools((ps) => ps.filter((p) => p.id !== id));
+  // Regenerate ONE file instead of the whole project (cheaper + faster).
+  // The prompt constrains output to that file; afterwards focus stays on it.
+  const regenerateFile = async (path) => {
+    if (streaming || busyRef.current || !path) return;
+    snapshot('Before regenerate ' + path);
+    await run(
+      'REGENERATE ONE FILE — rewrite ONLY "' + path + '" completely (full contents, improved, consistent with the rest of the project). Return it in a ```files block. Do NOT return any other file.',
+      'build'
+    );
+    if (filesRef.current[path]) setActiveFile(path);
+  };
   // Regenerate: drop trailing assistant reply(s), resubmit same context.
   const onRegenerate = async () => {
-    if (streaming || busyRef.current) return;
-    const arr = [...messagesRef.current];
+    if (streaming || busyRef.current) return;    const arr = [...messagesRef.current];
     while (arr.length && arr[arr.length - 1].role === 'assistant') arr.pop();
     if (!arr.length) return;
     messagesRef.current = arr;
@@ -1233,9 +1259,7 @@ export default function App() {
     const requestPatch = async (userText) => {
       let out = '';
       await sendChatCompletionRetry({
-        baseUrl: settingsRef.current.baseUrl,
-        apiKey: settingsRef.current.apiKey,
-        model: settingsRef.current.modelId,
+        ...llmRoute((m) => addLog('info', 'Patch retrying once with fallback ' + m)),
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: userText }
@@ -1809,6 +1833,7 @@ export default function App() {
               onSelectFile={setActiveFile}
               onAddFile={addFile}
               onDeleteFile={deleteFile}
+              onRegenerateFile={regenerateFile}
             />
           ) : (
             <button

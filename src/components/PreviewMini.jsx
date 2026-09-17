@@ -16,7 +16,7 @@ const DEVICES = [
 export default function PreviewMini({
   files, overrides, entry, entries, onEntryChange, hasBuild,
   onOpenCanvas, onClose, onToast, onDownloadHtml,
-  paneW, onPaneWidth, activeFile, onSelectFile, onAddFile, onDeleteFile
+  paneW, onPaneWidth, activeFile, onSelectFile, onAddFile, onDeleteFile, onRegenerateFile
 }) {
   const iframeRef = useRef(null);
   const viewportRef = useRef(null);
@@ -325,6 +325,7 @@ export default function PreviewMini({
           onSelectFile={onSelectFile}
           onAddFile={onAddFile}
           onDeleteFile={onDeleteFile}
+          onRegenerateFile={onRegenerateFile}
         />
       ) : (
         /* viewport — fixed height, the frame scrolls internally like a browser */

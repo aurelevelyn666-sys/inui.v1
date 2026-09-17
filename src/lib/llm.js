@@ -8,6 +8,7 @@ export function defaultSettings() {
     baseUrl: 'https://api.openai.com/v1',
     apiKey: '',
     modelId: 'gpt-4o-mini',
+    fallbackModelId: '',
     mcpUrls: [],
     autoApproveTools: false,
     skills: [],
@@ -32,6 +33,7 @@ export function loadSettings() {
       baseUrl: str(parsed.baseUrl, d.baseUrl),
       apiKey: str(parsed.apiKey, d.apiKey),
       modelId: str(parsed.modelId, d.modelId),
+      fallbackModelId: str(parsed.fallbackModelId, d.fallbackModelId),
       mcpUrls: arr(parsed.mcpUrls).filter((u) => typeof u === 'string'),
       autoApproveTools: !!parsed.autoApproveTools,
       skills: arr(parsed.skills).filter((s) => s && typeof s === 'object'),
@@ -325,53 +327,70 @@ export async function sendChatCompletionRetry(opts, { retries = 2, baseDelayMs =
         userToken(d);
       }
     : undefined;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await sendChatCompletion({ ...opts, onToken: guardedOnToken });
-    } catch (e) {
-      lastErr = e;
-      const msg = String((e && e.message) || e);
-      if (opts.signal?.aborted) throw e; // user stop — respect it immediately
-      if (PERMANENT.test(msg)) {
+  // Optional fallback model (same key/URL): one attempt after the primary is
+  // exhausted. Skipped for auth failures (same key would fail) and once any
+  // token has streamed (a retry would duplicate partial UI text).
+  const fb = opts.fallbackModel && opts.fallbackModel !== opts.model ? opts.fallbackModel : null;
+  const contextRe = /context length|maximum context|too many tokens|token limit|prompt is too long|context_window|input (is )?too (long|large)|tokens exceed|max_tokens/i;
+  const contextErr = (msg) =>
+    new Error(
+      'This conversation is too large for the model\u2019s context window. Start a new chat, ask for one section at a time, or use a model with a bigger window. (' +
+        msg.slice(0, 160) +
+      ')'
+    );
+
+  const runLoop = async (model, maxRetries, isFallback) => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await sendChatCompletion({ ...opts, model, onToken: guardedOnToken });
+      } catch (e) {
+        lastErr = e;
+        const msg = String((e && e.message) || e);
+        if (opts.signal?.aborted) throw e; // user stop — respect it immediately
         if (/HTTP 401|HTTP 403/.test(msg)) {
           throw new Error(msg + ' — check your API key in Settings.');
         }
-        throw e;
-      }
-      if (/context length|maximum context|too many tokens|token limit|prompt is too long|context_window|input (is )?too (long|large)|tokens exceed|max_tokens/i.test(msg)) {
-        throw new Error(
-          'This conversation is too large for the model\u2019s context window. Start a new chat, ask for one section at a time, or use a model with a bigger window. (' +
-            msg.slice(0, 160) +
-          ')'
-        );
-      }
-      if (streamed) throw e; // partial output already shown — a retry would duplicate it
-      if (!TRANSIENT.test(msg) || attempt === retries) throw e;
-      // Retryable — wait before the next attempt, but a Stop during the
-      // backoff must cancel immediately instead of firing one more request.
-      await new Promise((resolve, reject) => {
-        const t = setTimeout(resolve, baseDelayMs * Math.pow(2, attempt) + Math.random() * 300);
-        if (opts.signal) {
-          if (opts.signal.aborted) {
-            clearTimeout(t);
-            const ab = new Error('Generation stopped by user.');
-            ab.name = 'AbortError';
-            reject(ab);
-          } else {
-            opts.signal.addEventListener(
-              'abort',
-              () => {
-                clearTimeout(t);
-                const ab = new Error('Generation stopped by user.');
-                ab.name = 'AbortError';
-                reject(ab);
-              },
-              { once: true }
-            );
+        if (contextRe.test(msg) && (isFallback || !fb)) throw contextErr(msg);
+        if (isFallback || streamed) throw e;
+        if (!TRANSIENT.test(msg) || attempt === maxRetries) break; // terminal for primary — fallback gets a chance below
+        // Retryable — wait before the next attempt, but a Stop during the
+        // backoff must cancel immediately instead of firing one more request.
+        await new Promise((resolve, reject) => {
+          const t = setTimeout(resolve, baseDelayMs * Math.pow(2, attempt) + Math.random() * 300);
+          if (opts.signal) {
+            if (opts.signal.aborted) {
+              clearTimeout(t);
+              const ab = new Error('Generation stopped by user.');
+              ab.name = 'AbortError';
+              reject(ab);
+            } else {
+              opts.signal.addEventListener(
+                'abort',
+                () => {
+                  clearTimeout(t);
+                  const ab = new Error('Generation stopped by user.');
+                  ab.name = 'AbortError';
+                  reject(ab);
+                },
+                { once: true }
+              );
+            }
           }
-        }
-      });
+        });
+      }
     }
-  }
-  throw lastErr;
+    if (!isFallback && fb) {
+      if (opts.onFallbackModel) {
+        try {
+          opts.onFallbackModel(fb);
+        } catch {
+          /* notice hook must never break the retry */
+        }
+      }
+      return runLoop(fb, 0, true);
+    }
+    if (contextRe.test(String((lastErr && lastErr.message) || lastErr))) throw contextErr(String((lastErr && lastErr.message) || lastErr));
+    throw lastErr;
+  };
+  return runLoop(opts.model, retries, false);
 }

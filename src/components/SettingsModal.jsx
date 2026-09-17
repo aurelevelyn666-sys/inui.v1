@@ -119,6 +119,14 @@ export default function SettingsModal({ settings, onChange, onClose, initialTab 
           placeholder="gpt-4o-mini"
           className="mb-3"
         />
+        <label className="block text-xs text-zinc-500 mb-1">Fallback model ID (optional)</label>
+        <Input
+          value={settings.fallbackModelId || ''}
+          onChange={(e) => onChange({ fallbackModelId: e.target.value })}
+          placeholder="e.g. gpt-4o-mini — one retry if the primary fails"
+          className="mb-1"
+        />
+        <p className="text-[11px] text-zinc-500 mb-3">Same key and URL. Skipped for wrong-key errors and once any text has streamed.</p>
         <div className="flex items-center gap-2 mb-5">
           <Button onClick={runTest} disabled={testing} variant="outline" size="sm">
             {testing && <Loader2 size={12} className="animate-spin" />} Test connection

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Check, Download, FileText } from 'lucide-react';
+import { Copy, Check, Download, FileText, RotateCcw } from 'lucide-react';
 import FileTree from './FileTree.jsx';
 import { highlightCode } from '../lib/highlight.js';
 import { downloadBlob } from '../lib/zip.js';
@@ -33,7 +33,7 @@ function toLines(tokens) {
 // Read-only code viewer for the preview column's Code tab: full file tree on
 // the left, highlighted source on the right. Editing stays in the thread's
 // Files tab and on the canvas — this view never writes.
-export default function CodeView({ files, activeFile, onSelectFile, onAddFile, onDeleteFile }) {
+export default function CodeView({ files, activeFile, onSelectFile, onAddFile, onDeleteFile, onRegenerateFile }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -77,6 +77,16 @@ export default function CodeView({ files, activeFile, onSelectFile, onAddFile, o
             {String(activeFile || '').replace(/^\/+/, '')}
           </span>
           <div className="ml-auto flex items-center gap-0.5 shrink-0">
+            {onRegenerateFile && activeFile && (
+              <button
+                onClick={() => onRegenerateFile(activeFile)}
+                title="Regenerate only this file"
+                className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-black/5 flex items-center gap-1"
+              >
+                <RotateCcw size={12} />
+                <span className="text-[11px]">Regenerate</span>
+              </button>
+            )}
             <button
               onClick={copy}
               title={copied ? 'Copied' : 'Copy file'}

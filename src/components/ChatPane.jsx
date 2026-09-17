@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Send, Loader2, Plus, Trash2, Wrench, Play, X, Plug, Check, Square, Hammer, Image as ImageIcon, Download, Copy, Maximize2, Paperclip, FileText, Mic, Sparkles, ChevronDown, RotateCcw, Circle, ArrowUp } from 'lucide-react';
 import { filesToAttachments, ACCEPT } from '../lib/attach.js';
+import { suggestFollowUps } from '../lib/followups.js';
 
 function MiniMd({ text }) {
   // Chat never shows code: strip all fenced blocks AND any unfenced file-JSON
@@ -127,8 +128,29 @@ function CopyBtn({ text, label }) {
   );
 }
 
-function ToolBody({ m }) {
-  const [open, setOpen] = useState(false);
+// Manus-style next actions under the latest build: contextual follow-ups so
+// the user never wonders what to ask for. One click sends the prompt.
+function FollowUps({ files, onSend }) {
+  const items = suggestFollowUps(files || {});
+  if (!items.length || !onSend) return null;
+  return (
+    <div className="flex flex-col gap-1.5 mt-2">
+      {items.map((s) => (
+        <button
+          key={s.id}
+          onClick={() => onSend(s.prompt)}
+          className="group/fu flex items-center gap-2 text-left text-[12px] text-zinc-600 border border-black/10 rounded-xl px-3 py-2 hover:border-black/25 hover:text-black transition-colors bg-white"
+        >
+          <Sparkles size={12} className="text-zinc-400 group-hover/fu:text-black shrink-0" />
+          <span className="flex-1">{s.label}</span>
+          <span className="text-zinc-300 group-hover/fu:text-zinc-500 text-sm leading-none">→</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ToolBody({ m }) {  const [open, setOpen] = useState(false);
   const isErr = /^ERROR/.test(String(m.content || ''));
   return (
     <div className="rounded-xl border border-black/10 bg-white px-3 py-2 w-full">
@@ -410,6 +432,9 @@ export default function ChatPane(props) {
                       </button>
                     </div>
                   </div>
+                )}
+                {isLast && m.role === 'assistant' && !m.error && (m.files || []).length > 0 && !streaming && (
+                  <FollowUps files={files} onSend={onSend} />
                 )}
                 <div className="flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                   <CopyBtn text={m.role === 'user' ? m.content : displayContent(m)} />
