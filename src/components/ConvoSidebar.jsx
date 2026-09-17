@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, Search, Settings, PanelLeftClose, PanelLeftOpen, LogOut, ChevronDown, Star, MoreHorizontal, FileText } from 'lucide-react';
+import { Plus, Search, Settings, PanelLeftClose, PanelLeftOpen, LogOut, ChevronDown, Star, MoreHorizontal, FileText, Wand2, LayoutTemplate } from 'lucide-react';
 import { TEMPLATES } from '../lib/templates.js';
 
 function dayKey(ts) {
@@ -34,6 +34,7 @@ export default function ConvoSidebar(props) {
   const {
     convos, activeId, search, setSearch, onNew, onSelect, onDelete, canDelete,
     keyOn, modelId, onOpenSettings, onSignOut, onHome, onSelectTemplate,
+    onOpenSkills, onOpenTemplates,
     className, mini, onToggleMini
   } = props;
   const [collapsed, setCollapsed] = useState({});
@@ -126,6 +127,33 @@ export default function ConvoSidebar(props) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 pb-2 min-h-0">
+        {/* workspace nav — only entries with a working destination render */}
+        {(onOpenSkills || onOpenTemplates) && (
+          <div className="pb-1">
+            {onOpenSkills && (
+              <button
+                onClick={onOpenSkills}
+                className="w-full flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-black/[0.04] text-left"
+              >
+                <span className="w-6 h-6 rounded-md bg-violet-500/10 flex items-center justify-center shrink-0">
+                  <Wand2 size={12} className="text-violet-600" />
+                </span>
+                <span className="flex-1 min-w-0 text-[13px] text-zinc-700 truncate">Skills</span>
+              </button>
+            )}
+            {onOpenTemplates && (
+              <button
+                onClick={onOpenTemplates}
+                className="w-full flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-black/[0.04] text-left"
+              >
+                <span className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center shrink-0">
+                  <LayoutTemplate size={12} className="text-blue-600" />
+                </span>
+                <span className="flex-1 min-w-0 text-[13px] text-zinc-700 truncate">Templates</span>
+              </button>
+            )}
+          </div>
+        )}
         {/* saved templates */}
         <div className="flex items-center gap-1.5 px-2 pt-2 pb-1.5 text-[12px] font-medium text-zinc-400">
           <Star size={12} /> Saved

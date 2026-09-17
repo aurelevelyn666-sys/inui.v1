@@ -6,11 +6,11 @@ import { testConnection } from '../lib/llm';
 import { BUILTIN_SKILLS } from '../lib/builtin-skills.js';
 import { PRESET_MCP } from '../lib/mcp';
 
-export default function SettingsModal({ settings, onChange, onClose }) {
+export default function SettingsModal({ settings, onChange, onClose, initialTab }) {
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState(null);
   const [mcpInput, setMcpInput] = useState('');
-  const [tab, setTab] = useState('connection');
+  const [tab, setTab] = useState(initialTab === 'skills' ? 'skills' : 'connection');
   const [skillName, setSkillName] = useState('');
   const [skillText, setSkillText] = useState('');
   const [skillMsg, setSkillMsg] = useState(null);

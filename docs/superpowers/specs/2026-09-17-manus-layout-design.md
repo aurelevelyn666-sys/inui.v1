@@ -61,6 +61,8 @@ Open in new tab. All reuse existing handlers (`downloadHtml`, `exportZip`,
 - Implementation: lift `paneW` state from `PreviewMini` to `App`; measure the
   chat content area with a ResizeObserver (`stageW`); clamp in the pane-width
   setter; run the minimize/restore rule in an effect on `[paneW, stageW]`.
+  First measurement picks a proportional default (~52% of stage) until the
+  user touches the width.
 - Below 768px the rule is disabled; the sidebar stays an overlay as today.
 
 ## States

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Home, ChevronDown, GitBranch, X, Menu, Eye, PanelLeft, Loader2, FileText, Terminal as TerminalIcon, GitCommit } from 'lucide-react';
+import { Settings, Home, ChevronDown, GitBranch, X, Menu, PanelLeft, Loader2, Eye } from 'lucide-react';
 import HomeView from './components/HomeView.jsx';
 import SettingsModal from './components/SettingsModal.jsx';
 import ChatPane from './components/ChatPane.jsx';
@@ -13,9 +13,6 @@ import BuildsView from './components/BuildsView.jsx';
 import TemplatesView from './components/TemplatesView.jsx';
 import { TEMPLATES } from './lib/templates.js';
 import PreviewMini from './components/PreviewMini.jsx';
-import FileTree from './components/FileTree.jsx';
-import DiffView from './components/DiffView.jsx';
-import TerminalPanel from './components/TerminalPanel.jsx';
 import { loadSettings, saveSettings, buildSystemPrompt, buildPatchSystemPrompt, buildImagePrompt, sendChatCompletionRetry, messageToContent } from './lib/llm.js';
 import { STARTER_FILES, normalizePath, pickEntry, parseAssistantOutput, recoverFileFromText, parsePatchFromText, auditFiles, extractJsonFiles, splitComponentsFromText, extractImages, verifyProject, buildSrcDoc } from './lib/files.js';
 import { connectMcpServer, callMcpTool, DEMO_TOOLS, WEB_SEARCH_TOOL } from './lib/mcp.js';
@@ -109,6 +106,22 @@ export default function App() {
   const [showPreview, setShowPreview] = useState(false);
   const [sideOpen, setSideOpen] = useState(false);
   const [sideMini, setSideMini] = useState(false);
+  // Preview pane width lives here (not in PreviewMini) so the thread minimum
+  // and the sidebar auto-minimize rule can clamp it — see stage effect below.
+  const [paneW, setPaneW] = useState(480);
+  const [stageW, setStageW] = useState(0);
+  const stageRef = useRef(null);
+  // Set once a drag/keyboard nudge touches the width; until then the first
+  // stage measurement picks a proportional default (~half the stage).
+  const paneTouched = useRef(false);
+  // True only while WE auto-minimized (never override a manual minimize).
+  const autoMiniRef = useRef(false);
+  // Which Settings tab to show when the modal opens (deep link from sidebar).
+  const [settingsTab, setSettingsTab] = useState('connection');
+  const openSettings = (tab) => {
+    setSettingsTab(tab || 'connection');
+    setSettingsOpen(true);
+  };
   const convosRef = useRef([]);
   convosRef.current = convos;
   const activeConvoIdRef = useRef(null);
@@ -250,6 +263,64 @@ export default function App() {
     prevBuild.current = hasBuild;
   }, [hasBuild]);
 
+  // Preview/stage sizing (Manus layout): the stage is measured from the
+  // parent, the thread never drops below CHAT_MIN, and the sidebar
+  // auto-minimizes exactly when the thread would otherwise be squeezed out.
+  const SIDEBAR_W = 248;
+  const MINI_W = 56;
+  const CHAT_MIN = 340;
+  const HYST = 80;
+  useEffect(() => {
+    if (view !== 'chat') return;
+    const el = stageRef.current;
+    if (!el) return;
+    const measure = () => setStageW(el.clientWidth);
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    measure();
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+  useEffect(() => {
+    // Proportional default on first measure only — afterwards the width is
+    // entirely user-driven (drag, nudge, double-click reset).
+    if (view === 'chat' && stageW > 0 && !paneTouched.current) {
+      paneTouched.current = true;
+      setPaneW(Math.min(1400, Math.max(320, Math.round(stageW * 0.52))));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageW, view]);
+  const setPaneWClamped = (updater) => {
+    paneTouched.current = true;
+    setPaneW((prev) => {
+      const want = typeof updater === 'function' ? updater(prev) : updater;
+      // Clamp against the MINI geometry, not the current sidebar: dragging
+      // past the full-sidebar limit is exactly what triggers auto-minimize
+      // (which frees the room back). The thread itself never drops below min.
+      const rail = stageW < 768 ? 0 : MINI_W;
+      const max = Math.max(320, stageW - rail - CHAT_MIN);
+      return Math.min(1400, Math.max(320, Math.min(want, max)));
+    });
+  };
+  useEffect(() => {
+    if (view !== 'chat' || stageW < 768) return;
+    const roomFull = stageW - SIDEBAR_W - paneW;
+    if (!sideMini && roomFull < CHAT_MIN && stageW - MINI_W - paneW >= CHAT_MIN) {
+      autoMiniRef.current = true;
+      setSideMini(true);
+    } else if (sideMini && autoMiniRef.current && roomFull > CHAT_MIN + HYST) {
+      autoMiniRef.current = false;
+      setSideMini(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paneW, stageW, sideMini, view]);
+  const toggleMini = () => {
+    // A manual choice always wins — clear the auto flag so the rule above
+    // never fights the user.
+    autoMiniRef.current = false;
+    setSideMini((v) => !v);
+  };
+
   const resetWorkspace = () => {
     messagesRef.current = [];
     setMessages([]);
@@ -308,7 +379,9 @@ export default function App() {
   const switchConvo = (id) => {
     if (id === activeConvoIdRef.current) {
       setSideOpen(false);
-      // Already loaded (e.g. right after a reload while on Home) — just open it.
+      // Already loaded (e.g. right after a reload while on Home) — just open
+      // it, and make sure the preview matches the loaded files.
+      setShowPreview(Object.keys(filesRef.current).length > 2);
       setView('chat');
       return;
     }
@@ -391,7 +464,6 @@ export default function App() {
   // Codex-like panels: file tree, diff, terminal
   const [fileChanges, setFileChanges] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
-  const [rightPanelTab, setRightPanelTab] = useState('chat');
   const addLog = (type, message) => {
     setActivityLogs((prev) => [...prev.slice(-50), { id: nid(), type, message, time: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }]);
   };
@@ -1555,7 +1627,7 @@ export default function App() {
         <div className="h-screen flex bg-white">
           <IconRail active="builds" onNavigate={railNav} {...shared} />
           <BuildsView convos={convos} onOpen={switchConvo} onToast={showToast} />
-          {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} />}
+          {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} initialTab={settingsTab} />}
           {toast && <ToastBubble toast={toast} onDismiss={() => setToast(null)} />}
         </div>
       );
@@ -1571,7 +1643,7 @@ export default function App() {
               run(t.prompt);
             }}
           />
-          {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} />}
+          {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} initialTab={settingsTab} />}
           {toast && <ToastBubble toast={toast} onDismiss={() => setToast(null)} />}
         </div>
       );
@@ -1608,7 +1680,7 @@ export default function App() {
           hasKey={!!settings.apiKey}
           modelId={settings.modelId}
         />
-      {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} initialTab={settingsTab} />}
       {toast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[#ffffff] border border-black/10 rounded-full px-4 py-2 text-xs shadow-2xl flex items-center gap-2">
           {toast}
@@ -1642,11 +1714,11 @@ export default function App() {
         />
         <div className="flex-1 min-w-0 flex flex-col relative">
 
-        <div className="flex-1 min-h-0 flex relative">
+        <div ref={stageRef} className="flex-1 min-h-0 flex relative">
           <ConvoSidebar
             className={sideOpen ? 'flex absolute inset-y-0 left-0 z-40 h-full shadow-2xl' : 'hidden md:flex'}
             mini={sideMini && !sideOpen}
-            onToggleMini={() => setSideMini((v) => !v)}
+            onToggleMini={toggleMini}
             convos={convos}
             activeId={activeConvoId}
             search={convoSearch}
@@ -1657,14 +1729,16 @@ export default function App() {
             keyOn={!!settings.apiKey}
             modelId={settings.modelId}
             onOpenSettings={() => setSettingsOpen(true)}
+            onOpenSkills={() => openSettings('skills')}
+            onOpenTemplates={() => setView('templates')}
           />
           {sideOpen && (
             <div className="fixed inset-0 z-30 bg-black/60 md:hidden" onClick={() => setSideOpen(false)} />
           )}
-          <div className="flex-1 min-h-0 flex">
+          <div className="flex-1 min-h-0 flex min-w-0">
             {/* main chat area */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <div className="max-w-3xl mx-auto px-4 pb-10">
+            <div className="flex-1 min-h-0 overflow-y-auto min-w-0">
+              <div className="max-w-2xl mx-auto px-4 pb-10">
                 <ChatPane
                   messages={messages}
                   streaming={streaming}
@@ -1673,9 +1747,8 @@ export default function App() {
                   phase={phase}
                   onStop={stopGen}
                   onSend={run}
-                  activeTab="chat"
-                  setActiveTab={() => {}}
-                  hideTabs
+                  activeTab={paneTab}
+                  setActiveTab={setPaneTab}
                   convoKey={activeConvoId}
                   composerMode={composerMode}
                   setComposerMode={setComposerMode}
@@ -1713,70 +1786,43 @@ export default function App() {
                 />
               </div>
             </div>
-
-            {/* right panel: Files | Diff | Activity (hidden when preview is open) */}
-            {hasBuild && !showPreview && (
-              <div className="w-[280px] shrink-0 border-l border-black/10 hidden lg:flex flex-col min-h-0">
-                <div className="flex items-center border-b border-black/10 text-[11px] shrink-0">
-                  {[
-                    { id: 'files', icon: FileText, label: 'Files' },
-                    { id: 'diff', icon: GitCommit, label: 'Diff' },
-                    { id: 'activity', icon: TerminalIcon, label: 'Activity' }
-                  ].map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setRightPanelTab(t.id)}
-                      className={`flex items-center gap-1.5 px-3 py-2 ${rightPanelTab === t.id ? 'text-zinc-900 font-medium border-b-2 border-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
-                    >
-                      <t.icon size={11} />
-                      {t.label}
-                      {t.id === 'diff' && fileChanges.length > 0 && (
-                        <span className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center">{fileChanges.length}</span>
-                      )}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setShowPreview(true)}
-                    title="Open live preview"
-                    className="ml-auto mr-2 w-6 h-6 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-black/5"
-                  >
-                    <Eye size={12} />
-                  </button>
-                </div>
-                <div className="flex-1 min-h-0 overflow-hidden">
-                  {rightPanelTab === 'files' && (
-                    <FileTree
-                      files={files}
-                      activeFile={activeFile}
-                      onSelectFile={setActiveFile}
-                      onAddFile={addFile}
-                      onDeleteFile={deleteFile}
-                    />
-                  )}
-                  {rightPanelTab === 'diff' && (
-                    <DiffView changes={fileChanges} />
-                  )}
-                  {rightPanelTab === 'activity' && (
-                    <TerminalPanel logs={activityLogs} streaming={streaming} phase={phase} />
-                  )}
-                </div>
-              </div>
-            )}
           </div>
-          {showPreview && (
+          {/* col 3 — big live preview (Manus layout). Always mounted once a
+              build exists so the pane (and its width) is stable; pre-build it
+              shows its own empty state. Close hides the column; the floating
+              eye button reopens it. */}
+          {(showPreview || !hasBuild) ? (
             <PreviewMini
               files={files}
               overrides={baked}
               entry={entry}
+              entries={entries}
+              onEntryChange={setEntry}
               hasBuild={hasBuild}
               onOpenCanvas={() => setView('canvas')}
               onClose={() => setShowPreview(false)}
               onToast={showToast}
+              onDownloadHtml={downloadHtml}
+              paneW={paneW}
+              onPaneWidth={setPaneWClamped}
+              activeFile={activeFile}
+              onSelectFile={setActiveFile}
+              onAddFile={addFile}
+              onDeleteFile={deleteFile}
             />
+          ) : (
+            <button
+              onClick={() => setShowPreview(true)}
+              title="Open live preview"
+              aria-label="Open live preview"
+              className="hidden lg:flex absolute bottom-6 right-6 z-20 h-10 items-center gap-1.5 text-[12px] font-medium bg-zinc-900 text-white rounded-full pl-3.5 pr-4 shadow-2xl hover:bg-black"
+            >
+              <Eye size={13} /> Preview
+            </button>
           )}
         </div>
         </div>
-        {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} />}
+        {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} initialTab={settingsTab} />}
       </div>
     );
   }
@@ -2061,7 +2107,7 @@ export default function App() {
           </div>
         </div>
       </div>
-      {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} initialTab={settingsTab} />}
     </div>
   );
 }
