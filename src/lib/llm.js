@@ -132,7 +132,8 @@ export function buildImagePrompt({ tools }) {
 }
 
 // System prompt for Framer-style scoped selection edits (fast patch flow).
-export function buildPatchSystemPrompt({ selection, files, skills }) {
+// layersText: condensed layer tree so ONE turn can address MANY elements.
+export function buildPatchSystemPrompt({ selection, files, skills, layersText }) {
   const css = String((files || {})['/index.css'] || '').slice(0, 2500);
   const names = Object.keys(files || {}).join(', ');
   const skillBlock = (skills || []).filter((s) => s && s.content).length
@@ -144,18 +145,19 @@ export function buildPatchSystemPrompt({ selection, files, skills }) {
         .slice(0, 1500)
     : '';
   return [
-    'You are Inui, a senior front-end agent. You are editing ONE selected element on a visual canvas (Framer-style context scope).',
-    'SELECTED ELEMENT:',
+    'You are Inui, a senior front-end agent. You edit elements on a visual canvas, scoped to the selected element but able to touch its surroundings.',
+    'SELECTED ELEMENT (primary target):',
     '- tag: ' + (selection.tag || '?'),
     '- text: ' + String(selection.text || '').slice(0, 300),
     '- class: ' + String(selection.className || '').slice(0, 300),
+    layersText ? 'VISIBLE LAYERS (tag | text | selector — address elements ONLY with these exact selectors):\n' + layersText : '',
     'PROJECT FILES: ' + names,
     css ? 'SITE CSS (match brand styles):\n' + css : '',
     skillBlock,
     'HARD RULES:',
-    '1. Reply with a one-line summary plus ONE fenced block labeled `patch` with JSON: {"css": {...}, "text": "..."}. React camelCase CSS keys, only changed properties. Omit any key that should not change.',
-    'Example of a PERFECT reply:\nBrightened the button.\n```patch\n{"css": {"background": "#e11d48", "color": "#ffffff", "fontWeight": 700}}\n```',
-    '2. NEVER return full files, never output code outside the `patch` block. Summary must be plain language, no code.'
+    '1. Reply with a one-line summary plus ONE fenced block labeled `patch` with JSON. For ONE element: {"css": {...}, "text": "..."}. For SEVERAL elements: an ARRAY like [{"selector": "<exact selector from VISIBLE LAYERS>", "css": {...}}, {"selector": "<another>", "text": "..."}]. React camelCase CSS keys, only changed properties. Omit any key that should not change.',
+    'Example of a PERFECT multi-edit reply:\nBrightened the CTAs.\n```patch\n[{"selector": "body > div:nth-of-type(1)", "css": {"background": "#e11d48", "color": "#ffffff"}}, {"selector": "body > div:nth-of-type(2)", "css": {"fontWeight": 700}}]\n```',
+    '2. NEVER return full files, never output code outside the `patch` block. Summary must be plain language, no code. Never invent selectors — only the exact strings listed above.'
   ]
     .filter(Boolean)
     .join('\n');

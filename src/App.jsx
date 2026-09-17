@@ -14,7 +14,7 @@ import TemplatesView from './components/TemplatesView.jsx';
 import { TEMPLATES } from './lib/templates.js';
 import PreviewMini from './components/PreviewMini.jsx';
 import { loadSettings, saveSettings, buildSystemPrompt, buildPatchSystemPrompt, buildImagePrompt, sendChatCompletionRetry, messageToContent } from './lib/llm.js';
-import { STARTER_FILES, normalizePath, pickEntry, parseAssistantOutput, recoverFileFromText, parsePatchFromText, auditFiles, extractJsonFiles, splitComponentsFromText, extractImages, verifyProject, buildSrcDoc } from './lib/files.js';
+import { STARTER_FILES, normalizePath, pickEntry, parseAssistantOutput, recoverFileFromText, parsePatchFromText, matchPatches, condenseLayers, auditFiles, extractJsonFiles, splitComponentsFromText, extractImages, verifyProject, buildSrcDoc } from './lib/files.js';
 import { connectMcpServer, callMcpTool, DEMO_TOOLS, WEB_SEARCH_TOOL } from './lib/mcp.js';
 import { getActiveSkills } from './lib/builtin-skills.js';
 import { exportProjectZip, downloadBlob } from './lib/zip.js';
@@ -346,6 +346,7 @@ export default function App() {
     setVersions([]);
     setFileChanges([]);
     setAudit(null);
+    setAgentSteps([]);
     setLocked({});
     setComments([]);
     setHasPaste(false);
@@ -438,6 +439,23 @@ export default function App() {
   const [rightTab, setRightTab] = useState('design');
   const [agentBusy, setAgentBusy] = useState(false);
   const [pinned, setPinned] = useState(null);
+  // Agent activity feed: live step rows with measured timings (Viewed, Read
+  // N layers, Edited N layers...). Ephemera — cleared on convo switch.
+  const [agentSteps, setAgentSteps] = useState([]);
+  const pushStep = (label, detail) => {
+    const s = { id: nid(), label, detail: detail || '', t0: Date.now(), secs: null, state: 'running' };
+    setAgentSteps((prev) => [...prev.slice(-7), s]);
+    return s.id;
+  };
+  const endStep = (id, state, detail) => {
+    setAgentSteps((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? { ...s, state: state || 'done', secs: Math.max(0, Math.round((Date.now() - s.t0) / 1000)), ...(detail !== undefined ? { detail } : {}) }
+          : s
+      )
+    );
+  };
   const [versions, setVersions] = useState([]);
   const [audit, setAudit] = useState(null);
   const [auditing, setAuditing] = useState(false);
@@ -1255,7 +1273,16 @@ export default function App() {
       { role: 'user', content: '(selection edit · <' + target.tag + '>) ' + String(instruction).replace(/^SELECTION PATCH:\s*/, '') },
       { role: 'assistant', content: 'Working on <' + target.tag + '>…' }
     ]);
-    const system = buildPatchSystemPrompt({ selection: target, files: filesRef.current, skills: getActiveSkills(settingsRef.current) });
+    // Layer context: the model may address MANY elements in one turn, but
+    // only with selectors from this live tree (matched again at apply time).
+    const condensed = condenseLayers(layers, 3000, 40);
+    const knownSelectors = [...condensed.selectors];
+    if (target.selector && !knownSelectors.includes(target.selector)) knownSelectors.push(target.selector);
+    if (condensed.count > 0) {
+      const rs = pushStep('Read ' + condensed.count + ' layers');
+      endStep(rs, 'done', 'canvas tree');
+    }
+    const system = buildPatchSystemPrompt({ selection: target, files: filesRef.current, skills: getActiveSkills(settingsRef.current), layersText: condensed.text });
     const requestPatch = async (userText) => {
       let out = '';
       await sendChatCompletionRetry({
@@ -1271,29 +1298,43 @@ export default function App() {
       });
       return out;
     };
+    const toItems = (parsed) => {
+      if (!parsed) return [];
+      if (Array.isArray(parsed.patches)) return parsed.patches;
+      if (parsed.css || parsed.text !== null) {
+        return [{ selector: null, css: parsed.css || null, text: parsed.text !== null ? parsed.text : null }];
+      }
+      return [];
+    };
+    const askStep = pushStep('Asking model…');
     let full = '';
     try {
       full = await requestPatch(instruction);
+      endStep(askStep, 'done');
     } catch (e) {
+      endStep(askStep, 'error');
       if (myGen === genRef.current) {
         updateLastMsg({ role: 'assistant', content: 'Agent failed: ' + String((e && e.message) || e) });
       }
       endAgent();
       return;
     }
-    let patch = parsePatchFromText(full);
-    if (!patch) {
+    let matched = matchPatches(toItems(parsePatchFromText(full)), knownSelectors);
+    if (!matched.apply.length) {
       // One strict retry before giving up — models often comply on second ask.
       if (myGen === genRef.current) {
         updateLastMsg({ role: 'assistant', content: 'First attempt came back unusable — retrying with a stricter format…' });
       }
+      const askStep2 = pushStep('Asking model…', 'retry, stricter format');
       try {
         full = await requestPatch(
-          'Reply with ONLY a ```patch fenced JSON block and absolutely nothing else. ' +
+          'Reply with ONLY a ```patch fenced JSON block (one object, or an array of {selector, css, text} using ONLY the listed selectors) and absolutely nothing else. ' +
           'Original request: ' + instruction
         );
-        patch = parsePatchFromText(full);
+        endStep(askStep2, 'done');
+        matched = matchPatches(toItems(parsePatchFromText(full)), knownSelectors);
       } catch (e) {
+        endStep(askStep2, 'error');
         if (myGen === genRef.current) {
           updateLastMsg({ role: 'assistant', content: 'Agent failed: ' + String((e && e.message) || e) });
         }
@@ -1306,15 +1347,13 @@ export default function App() {
       return;
     }
     const summary = full.replace(/```[\s\S]*?```/g, '').trim().slice(0, 200);
-    if (patch && (patch.css || patch.text)) {
-      snapshot('Agent edit: ' + (summary || target.tag).slice(0, 40));
-      onPatch({ selector: target.selector, css: patch.css, text: patch.text });
-      setLiveApply({ id: nid(), selector: target.selector, css: patch.css, text: patch.text });
-      updateLastMsg({ role: 'assistant', content: 'Applied to <' + target.tag + '>: ' + (summary || 'style/text updated.'), secs: Math.round((Date.now() - t1) / 1000) });
-    } else {
+    if (!matched.apply.length) {
+      const why = matched.skipped.length
+        ? ' Skipped: ' + matched.skipped.slice(0, 4).map((s) => (s.selector || '#' + s.index) + ' (' + s.reason + ')').join('; ') + '.'
+        : '';
       updateLastMsg({
         role: 'assistant',
-        content: 'Couldn\u2019t apply that — the model didn\u2019t return a usable edit after 2 tries.',
+        content: 'Couldn\u2019t apply that — the model didn\u2019t return a usable edit after 2 tries.' + why,
         secs: Math.round((Date.now() - t1) / 1000),
         raw: full.slice(0, 8000),
         target: targetSnap,
@@ -1322,6 +1361,34 @@ export default function App() {
           { id: 'main', label: 'Do it as full edit' },
           { id: 'copy', label: 'Copy raw' }
         ]
+      });
+      endAgent();
+      return;
+    }
+    // One snapshot per turn (undo via History), then fan out. A single item
+    // failing must never abort the rest.
+    snapshot('Agent edit: ' + (summary || target.tag).slice(0, 40));
+    const editStep = pushStep('Editing…');
+    let applied = 0;
+    matched.apply.forEach((it) => {
+      try {
+        const sel = it.selector || target.selector;
+        onPatch({ selector: sel, css: it.css, text: it.text });
+        setLiveApply({ id: nid(), selector: sel, css: it.css, text: it.text });
+        applied++;
+      } catch {
+        /* isolated per item */
+      }
+    });
+    const skippedNote = matched.skipped.length
+      ? ' · skipped ' + matched.skipped.length + ' (' + matched.skipped.slice(0, 3).map((s) => s.reason).join(', ') + ')'
+      : '';
+    endStep(editStep, 'done', 'Edited ' + applied + ' layer' + (applied === 1 ? '' : 's') + skippedNote);
+    if (myGen === genRef.current) {
+      updateLastMsg({
+        role: 'assistant',
+        content: 'Applied to ' + applied + ' layer' + (applied === 1 ? '' : 's') + ': ' + (summary || 'style/text updated.') + skippedNote,
+        secs: Math.round((Date.now() - t1) / 1000)
       });
     }
     endAgent();
@@ -2054,6 +2121,7 @@ export default function App() {
                 onUnpin={() => setPinned(null)}
                 onSendAgent={agentSend}
                 agentBusy={agentBusy || streaming}
+                steps={agentSteps}
                 versions={versions}
                 onRestoreVersion={restoreVersion}
                 audit={audit}

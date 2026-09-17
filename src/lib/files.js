@@ -321,21 +321,100 @@ function cssDeclsToObject(decls) {
   return css;
 }
 
-function tryParsePatchJson(s) {
-  try {
-    const obj = JSON.parse(String(s).trim());
-    if (obj && (obj.css || typeof obj.text === 'string')) {
-      return { css: obj.css || null, text: typeof obj.text === 'string' ? obj.text : null };
+export const MAX_PATCHES = 12;
+
+function normalizePatchItem(item) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+  const css = item.css && typeof item.css === 'object' && !Array.isArray(item.css) ? item.css : null;
+  const text = typeof item.text === 'string' ? item.text : null;
+  if (!css && text === null) return null;
+  const selector = typeof item.selector === 'string' && item.selector.trim() ? item.selector.trim() : null;
+  return { selector, css, text };
+}
+
+// Partitions a patch list into applicable vs skipped (pure — unit tested).
+// knownSelectors: selector strings from the live layer tree (+ the pinned
+// target). Unknown selectors are refused, never applied blind; extras past
+// the cap are reported, not silently run.
+export function matchPatches(patches, knownSelectors) {
+  const known = new Set((knownSelectors || []).filter((s) => typeof s === 'string'));
+  const apply = [];
+  const skipped = [];
+  (Array.isArray(patches) ? patches : []).forEach((raw, i) => {
+    if (apply.length >= MAX_PATCHES) {
+      skipped.push({ index: i, reason: 'over cap of ' + MAX_PATCHES });
+      return;
     }
+    const item = normalizePatchItem(raw);
+    if (!item) {
+      skipped.push({ index: i, reason: 'empty (no css or text)' });
+      return;
+    }
+    if (item.selector && !known.has(item.selector)) {
+      skipped.push({ index: i, selector: item.selector, reason: 'unknown selector' });
+      return;
+    }
+    apply.push(item);
+  });
+  return { apply, skipped };
+}
+
+// Flattens a layer tree into prompt-sized context lines + selector set.
+export function condenseLayers(layers, maxChars = 3000, maxNodes = 40) {
+  const lines = [];
+  const selectors = [];
+  let chars = 0;
+  const walk = (nodes, depth) => {
+    for (const n of nodes || []) {
+      if (lines.length >= maxNodes || chars >= maxChars) return;
+      const tag = String((n && n.tag) || '?').slice(0, 24);
+      const text = String((n && n.text) || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+      const sel = String((n && n.selector) || '');
+      if (sel) selectors.push(sel);
+      const line = '  '.repeat(Math.min(depth, 4)) + tag + (text ? ' | "' + text + '"' : '') + (sel ? ' | ' + sel : '');
+      lines.push(line);
+      chars += line.length;
+      if (n && n.kids) walk(n.kids, depth + 1);
+    }
+  };
+  walk(Array.isArray(layers) ? layers : [], 0);
+  return { text: lines.join('\n').slice(0, maxChars), selectors, count: lines.length };
+}
+
+function tryParsePatchJson(s) {
+  let obj;
+  try {
+    obj = JSON.parse(String(s).trim());
   } catch {
-    /* ignore */
+    return null;
+  }
+  if (Array.isArray(obj)) {
+    // Multi-patch turn: shape-check here, selector matching happens later
+    // in matchPatches() against the live layer tree.
+    const list = normalizePatchList(obj);
+    return list.length ? { patches: list } : null;
+  }
+  if (obj && (obj.css || typeof obj.text === 'string')) {
+    return { css: obj.css || null, text: typeof obj.text === 'string' ? obj.text : null };
   }
   return null;
 }
 
+// Normalizes a raw array into patch items (shape only — matching happens in
+// matchPatches with live layers). Caps length; drops empties.
+function normalizePatchList(arr) {
+  const out = [];
+  (Array.isArray(arr) ? arr : []).forEach((raw) => {
+    if (out.length >= MAX_PATCHES) return;
+    const item = normalizePatchItem(raw);
+    if (item) out.push(item);
+  });
+  return out;
+}
+
 // Tolerates: ```patch / ```json fences, ```css declarations,
 // raw JSON anywhere, or plain prose (used as the new text).
-// Parses a SELECTION PATCH fence -> { css, text } or null.
+// Parses a SELECTION PATCH fence -> { css, text } | { patches } | null.
 export function parsePatchFromText(text) {
   const src = String(text || '');
   const fences = extractFences(src);
@@ -347,6 +426,21 @@ export function parsePatchFromText(text) {
     } else if (lang === 'css') {
       const css = cssDeclsToObject(f.code);
       if (Object.keys(css).length) return { css, text: null };
+    }
+  }
+  // raw JSON array anywhere (multi-patch without fences) — scanned BEFORE
+  // single objects, because an array span contains inner {...} spans that
+  // would otherwise match first and lose the batch. Same bounds.
+  const aOpens = [];
+  for (let i = 0; i < src.length && aOpens.length < 8; i++) if (src[i] === '[') aOpens.push(i);
+  const aCloses = [];
+  for (let i = src.length - 1; i >= 0 && aCloses.length < 8; i--) if (src[i] === ']') aCloses.push(i);
+  for (const e of aCloses) {
+    for (const s of aOpens) {
+      if (e - s > 4 && e - s < 40000) {
+        const p = tryParsePatchJson(src.slice(s, e + 1));
+        if (p && p.patches) return p;
+      }
     }
   }
   // raw JSON object anywhere (bounded attempts, longest spans first)

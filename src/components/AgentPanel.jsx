@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Pin, PinOff, Loader2, Wand2, Languages,
-  ClipboardCheck, History, ChevronDown, Home, Settings
+  ClipboardCheck, History, ChevronDown, Home, Settings, CheckCircle2, XCircle, Circle
 } from 'lucide-react';
 
 const LANGS = ['Spanish', 'French', 'German', 'Indonesian', 'Japanese', 'Arabic'];
@@ -22,7 +22,7 @@ const PAGE_SKILLS = [
 export default function AgentPanel(props) {
   const {
     pinned, selection, onPin, onUnpin,
-    onSendAgent, agentBusy,
+    onSendAgent, agentBusy, steps,
     versions, onRestoreVersion,
     audit, onRunAudit, auditing, onFixAudit, fixingAudit,
     currentPage, modelId, onOpenSettings,
@@ -192,6 +192,32 @@ export default function AgentPanel(props) {
           )}
         </div>
       </div>
+
+      {/* live activity feed — one row per agent step with measured timings */}
+      {(steps || []).length > 0 && (
+        <div className="shrink-0 px-3 py-2 border-t border-black/10 max-h-36 overflow-y-auto">
+          {(steps || []).slice(-8).map((s) => (
+            <div key={s.id} className="flex items-center gap-1.5 text-[11px] py-0.5">
+              {s.state === 'running' ? (
+                <Loader2 size={10} className="animate-spin text-zinc-400 shrink-0" />
+              ) : s.state === 'error' ? (
+                <XCircle size={10} className="text-red-500 shrink-0" />
+              ) : s.state === 'done' ? (
+                <CheckCircle2 size={10} className="text-emerald-500 shrink-0" />
+              ) : (
+                <Circle size={10} className="text-zinc-300 shrink-0" />
+              )}
+              <span className="text-zinc-600 truncate flex-1">
+                {s.label}
+                {s.detail ? <span className="text-zinc-400"> — {s.detail}</span> : null}
+              </span>
+              {s.secs !== null && s.secs !== undefined && (
+                <span className="text-[10px] text-zinc-400 tabular-nums shrink-0">{s.secs}s</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* shared conversation */}
       <div className="flex-1 min-h-0 flex flex-col">
