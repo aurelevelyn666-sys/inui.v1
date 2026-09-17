@@ -43,46 +43,46 @@ export default function AgentPanel(props) {
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      <div className="shrink-0 px-3 pt-2.5 pb-2 space-y-2 max-h-[46%] overflow-y-auto border-b border-black/10">
+      <div className="shrink-0 px-3 pt-2.5 pb-2 space-y-2 max-h-[46%] overflow-y-auto border-b cui-line">
         {/* viewed pill */}
-        <div className="flex items-center gap-1.5 text-[11px] border border-black/10 rounded-lg px-2.5 py-1.5 text-zinc-500 bg-[#ffffff]">
-          <Home size={11} className="text-zinc-500" />
+        <div className="flex items-center gap-1.5 text-[11px] border cui-line rounded-lg px-2.5 py-1.5 cui-sub cui-panel">
+          <Home size={11} className="cui-faint" />
           <span className="truncate">Viewed {currentPage === '/App.jsx' ? 'Home' : currentPage}</span>
         </div>
 
         {/* pinned context */}
-        <div className="border border-black/10 rounded-xl p-2.5 bg-[#ffffff]">
+        <div className="border cui-line rounded-xl p-2.5 cui-panel">
           {pinned ? (
             <div>
-              <div className="flex items-center gap-1.5 text-[11px] text-zinc-900 mb-1">
+              <div className="flex items-center gap-1.5 text-[11px] cui-ink mb-1">
                 <Pin size={11} /> Scoped to selection
-                <button onClick={onUnpin} className="ml-auto text-zinc-500 hover:text-zinc-700 flex items-center gap-1">
+                <button onClick={onUnpin} className="ml-auto cui-sub hover:text-black flex items-center gap-1">
                   <PinOff size={11} /> Unpin
                 </button>
               </div>
-              <div className="text-[11px] text-zinc-500">
-                <span className="font-mono text-[10px] bg-black/5 text-zinc-900 rounded px-1 py-0.5 mr-1.5">{pinned.tag}</span>
-                {(pinned.text || '').slice(0, 80) || <span className="text-zinc-600">no text</span>}
+              <div className="text-[11px] cui-sub">
+                <span className="font-mono text-[10px] bg-[#f0f0f3] cui-ink rounded px-1 py-0.5 mr-1.5">{pinned.tag}</span>
+                {(pinned.text || '').slice(0, 80) || <span className="cui-faint">no text</span>}
               </div>
             </div>
           ) : selection ? (
             <button onClick={onPin} className="w-full text-left">
-              <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 mb-1">
+              <div className="flex items-center gap-1.5 text-[11px] cui-sub mb-1">
                 <Pin size={11} /> Pin selection as context?
               </div>
-              <div className="text-[11px] text-zinc-500">
-                <span className="font-mono text-[10px] bg-black/5 text-zinc-600 rounded px-1 py-0.5 mr-1.5">{selection.tag}</span>
+              <div className="text-[11px] cui-sub">
+                <span className="font-mono text-[10px] bg-[#f0f0f3] cui-sub rounded px-1 py-0.5 mr-1.5">{selection.tag}</span>
                 {(selection.text || '').slice(0, 80)}
               </div>
             </button>
           ) : (
-            <p className="text-[11px] text-zinc-600">Select an element on the canvas, then pin it to scope the agent to just that part.</p>
+            <p className="text-[11px] cui-sub">Select an element on the canvas, then pin it to scope the agent to just that part.</p>
           )}
         </div>
 
         {/* skills */}
         <div>
-          <button onClick={() => setShowSkills((v) => !v)} className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">
+          <button onClick={() => setShowSkills((v) => !v)} className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider cui-sub mb-1.5">
             <Wand2 size={10} /> Skills
             <ChevronDown size={10} className={`ml-auto transition-transform ${showSkills ? 'rotate-180' : ''}`} />
           </button>
@@ -94,7 +94,7 @@ export default function AgentPanel(props) {
                     key={s.id}
                     disabled={!target || agentBusy}
                     onClick={() => sendSelection(s.prompt)}
-                    className="text-[11px] border border-black/10 rounded-full px-2.5 py-1 text-zinc-600 hover:border-black/20 hover:text-black disabled:opacity-35"
+                    className="text-[11px] border cui-line rounded-full px-2.5 py-1 cui-sub hover:border-[#d4d4d8] hover:text-black disabled:opacity-35"
                   >
                     {s.label}
                   </button>
@@ -104,7 +104,7 @@ export default function AgentPanel(props) {
                 <select
                   value={lang}
                   onChange={(e) => setLang(e.target.value)}
-                  className="bg-[#ffffff] border border-black/10 rounded-full px-2 py-1 text-[11px] text-zinc-500 outline-none [&>option]:bg-zinc-900"
+                  className="cui-panel border cui-line rounded-full px-2 py-1 text-[11px] cui-sub outline-none"
                 >
                   {LANGS.map((l) => (
                     <option key={l}>{l}</option>
@@ -113,7 +113,7 @@ export default function AgentPanel(props) {
                 <button
                   disabled={!target || agentBusy}
                   onClick={() => sendSelection('translate this element\u2019s text to ' + lang + '. Return ONLY the translated text in the patch, keep tone and length similar.')}
-                  className="text-[11px] border border-black/10 rounded-full px-2.5 py-1 text-zinc-600 hover:border-black/20 hover:text-black disabled:opacity-35 flex items-center gap-1"
+                  className="text-[11px] border cui-line rounded-full px-2.5 py-1 cui-sub hover:border-[#d4d4d8] hover:text-black disabled:opacity-35 flex items-center gap-1"
                 >
                   <Languages size={11} /> Translate
                 </button>
@@ -124,7 +124,7 @@ export default function AgentPanel(props) {
                     key={s.id}
                     disabled={agentBusy}
                     onClick={() => send(s.prompt, 'page')}
-                    className="text-[11px] border border-black/10 rounded-full px-2.5 py-1 text-zinc-600 hover:border-black/20 hover:text-black disabled:opacity-50"
+                    className="text-[11px] border cui-line rounded-full px-2.5 py-1 cui-sub hover:border-[#d4d4d8] hover:text-black disabled:opacity-50"
                   >
                     {s.label}
                   </button>
@@ -132,7 +132,7 @@ export default function AgentPanel(props) {
                 <button
                   onClick={onRunAudit}
                   disabled={auditing}
-                  className="text-[11px] border border-black/10 rounded-full px-2.5 py-1 text-zinc-600 hover:border-black/20 hover:text-black disabled:opacity-50 flex items-center gap-1"
+                  className="text-[11px] border cui-line rounded-full px-2.5 py-1 cui-sub hover:border-[#d4d4d8] hover:text-black disabled:opacity-50 flex items-center gap-1"
                 >
                   {auditing ? <Loader2 size={10} className="animate-spin" /> : <ClipboardCheck size={11} />} Audit page
                 </button>
@@ -144,18 +144,18 @@ export default function AgentPanel(props) {
         {/* audit results */}
         {audit && (
           <div>
-            <button onClick={() => setShowAudit((v) => !v)} className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">
+            <button onClick={() => setShowAudit((v) => !v)} className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider cui-sub mb-1.5">
               <ClipboardCheck size={10} /> Audit
               <ChevronDown size={10} className={`ml-auto transition-transform ${showAudit ? 'rotate-180' : ''}`} />
             </button>
             {showAudit && (
-              <div className="border border-black/10 rounded-xl p-2.5 mb-1 bg-[#ffffff]">
+              <div className="border cui-line rounded-xl p-2.5 mb-1 cui-panel">
                 <div className="text-[11px] font-medium mb-1.5">
                   {(audit.issues || []).length === 0 ? <span className="text-emerald-600">clean — no issues found</span> : <span className="text-amber-700">{(audit.issues || []).length} issue(s)</span>}
                 </div>
                 {(audit.issues || []).slice(0, 8).map((it, i) => (
-                  <div key={i} className="text-[10px] text-zinc-500 py-0.5 truncate">
-                    <span className="text-zinc-600 uppercase mr-1">{it.type}</span>
+                  <div key={i} className="text-[10px] cui-sub py-0.5 truncate">
+                    <span className="cui-sub uppercase mr-1">{it.type}</span>
                     {it.file} — {String(it.detail || '').slice(0, 90)}
                   </div>
                 ))}
@@ -163,7 +163,7 @@ export default function AgentPanel(props) {
                   <button
                     onClick={onFixAudit}
                     disabled={fixingAudit}
-                    className="inu-btn-blue mt-2 w-full text-[11px] rounded-full py-1.5 flex items-center justify-center gap-1"
+                    className="cui-btn mt-2 w-full text-[11px] rounded-full py-1.5 flex items-center justify-center gap-1"
                   >
                     <Wand2 size={11} /> Fix all with AI
                   </button>
@@ -175,17 +175,17 @@ export default function AgentPanel(props) {
 
         {/* versions */}
         <div>
-          <button onClick={() => setShowHistory((v) => !v)} className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">
+          <button onClick={() => setShowHistory((v) => !v)} className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider cui-sub mb-1.5">
             <History size={10} /> History · rollback
             <ChevronDown size={10} className={`ml-auto transition-transform ${showHistory ? 'rotate-180' : ''}`} />
           </button>
           {showHistory && (
             <div className="space-y-1.5 mb-1">
-              {versions.length === 0 && <p className="text-[11px] text-zinc-600">Every agent change snapshots here. Nothing yet.</p>}
+              {versions.length === 0 && <p className="text-[11px] cui-sub">Every agent change snapshots here. Nothing yet.</p>}
               {versions.map((v) => (
-                <div key={v.id} className="flex items-center gap-1.5 text-[11px] bg-[#ffffff] border border-black/10 rounded-lg px-2 py-1.5">
-                  <span className="flex-1 truncate text-zinc-500">{v.label}</span>
-                  <button onClick={() => onRestoreVersion(v.id)} className="text-zinc-900 hover:text-black shrink-0">Restore</button>
+                <div key={v.id} className="flex items-center gap-1.5 text-[11px] cui-panel border cui-line rounded-lg px-2 py-1.5">
+                  <span className="flex-1 truncate cui-sub">{v.label}</span>
+                  <button onClick={() => onRestoreVersion(v.id)} className="cui-ink hover:text-black shrink-0">Restore</button>
                 </div>
               ))}
             </div>
@@ -195,24 +195,24 @@ export default function AgentPanel(props) {
 
       {/* live activity feed — one row per agent step with measured timings */}
       {(steps || []).length > 0 && (
-        <div className="shrink-0 px-3 py-2 border-t border-black/10 max-h-36 overflow-y-auto">
+        <div className="shrink-0 px-3 py-2 border-t cui-line max-h-36 overflow-y-auto">
           {(steps || []).slice(-8).map((s) => (
             <div key={s.id} className="flex items-center gap-1.5 text-[11px] py-0.5">
               {s.state === 'running' ? (
-                <Loader2 size={10} className="animate-spin text-zinc-400 shrink-0" />
+                <Loader2 size={10} className="animate-spin cui-faint shrink-0" />
               ) : s.state === 'error' ? (
                 <XCircle size={10} className="text-red-500 shrink-0" />
               ) : s.state === 'done' ? (
                 <CheckCircle2 size={10} className="text-emerald-500 shrink-0" />
               ) : (
-                <Circle size={10} className="text-zinc-300 shrink-0" />
+                <Circle size={10} className="cui-faint shrink-0" />
               )}
-              <span className="text-zinc-600 truncate flex-1">
+              <span className="cui-sub truncate flex-1">
                 {s.label}
-                {s.detail ? <span className="text-zinc-400"> — {s.detail}</span> : null}
+                {s.detail ? <span className="cui-faint"> — {s.detail}</span> : null}
               </span>
               {s.secs !== null && s.secs !== undefined && (
-                <span className="text-[10px] text-zinc-400 tabular-nums shrink-0">{s.secs}s</span>
+                <span className="text-[10px] cui-faint tabular-nums shrink-0">{s.secs}s</span>
               )}
             </div>
           ))}
@@ -224,7 +224,7 @@ export default function AgentPanel(props) {
         {threadNode}
       </div>
 
-      <div className="shrink-0 px-3 py-2 border-t border-black/10 flex items-center gap-1.5 text-[11px] text-zinc-500">
+      <div className="shrink-0 px-3 py-2 border-t cui-line flex items-center gap-1.5 text-[11px] cui-sub">
         <span className="truncate">{modelId}</span>
         <button onClick={onOpenSettings} title="Change model" className="ml-auto p-1 hover:text-black"><Settings size={12} /></button>
       </div>

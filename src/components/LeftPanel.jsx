@@ -18,8 +18,8 @@ function PagesPanel({ entries, entry, setEntry, onAddPage }) {
   return (
     <div className="h-full flex flex-col min-h-0">
       <div className="px-3 py-2">
-        <div className="flex items-center gap-1.5 bg-[#ffffff] border border-black/10 rounded-lg px-2.5 py-1.5">
-          <Search size={12} className="text-zinc-600 shrink-0" />
+        <div className="cui-input flex items-center gap-1.5 !py-1.5">
+          <Search size={12} className="cui-faint shrink-0" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -30,33 +30,33 @@ function PagesPanel({ entries, entry, setEntry, onAddPage }) {
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3 min-h-0">
         <div className="flex items-center px-2 pt-1 pb-1">
-          <span className="text-[11px] font-medium text-zinc-600">Pages</span>
-          <button onClick={onAddPage} title="New page" className="ml-auto text-zinc-500 hover:text-black"><Plus size={13} /></button>
+          <span className="text-[11px] font-medium cui-sub">Pages</span>
+          <button onClick={onAddPage} title="New page" className="ml-auto cui-sub hover:text-black"><Plus size={13} /></button>
         </div>
         {pageList.map((p) => (
           <button
             key={p}
             onClick={() => setEntry(p)}
             className={`w-full flex items-center gap-2 text-left text-xs px-2.5 py-1.5 rounded-lg truncate ${
-              p === entry ? 'bg-black/5 text-zinc-900' : 'text-zinc-500 hover:text-zinc-700 hover:bg-black/5'
+              p === entry ? 'bg-[#ececef] cui-ink font-medium' : 'cui-sub hover:text-black hover:bg-[#f0f0f3]'
             }`}
           >
-            {p === '/App.jsx' ? <Home size={12} className="shrink-0" /> : <span className="w-3 text-center text-zinc-600 shrink-0">›</span>}
+            {p === '/App.jsx' ? <Home size={12} className="shrink-0" /> : <span className="w-3 text-center cui-faint shrink-0">›</span>}
             <span className="truncate">{pageLabel(p)}</span>
           </button>
         ))}
         {components.length > 0 && (
           <>
-            <div className="px-2 pt-3 pb-1 text-[11px] font-medium text-zinc-600">Components</div>
+            <div className="px-2 pt-3 pb-1 text-[11px] font-medium cui-sub">Components</div>
             {components.map((p) => (
               <button
                 key={p}
                 onClick={() => setEntry(p)}
                 className={`w-full flex items-center gap-2 text-left text-xs px-2.5 py-1.5 rounded-lg truncate ${
-                  p === entry ? 'bg-black/5 text-zinc-900' : 'text-zinc-500 hover:text-zinc-700 hover:bg-black/5'
+                  p === entry ? 'bg-[#ececef] cui-ink font-medium' : 'cui-sub hover:text-black hover:bg-[#f0f0f3]'
                 }`}
               >
-                <span className="w-3 text-center text-zinc-600 shrink-0">◇</span>
+                <span className="w-3 text-center cui-faint shrink-0">◇</span>
                 <span className="truncate font-mono text-[11px]">{p.replace('/components/', '')}</span>
               </button>
             ))}
@@ -78,8 +78,8 @@ function LayerNode({ node, depth, onSelect, selectedSel, lockedMap, hiddenMap, o
         role="button"
         tabIndex={0}
         aria-label={'Select layer ' + (node.text || node.tag)}
-        className={`flex items-center gap-1 rounded-md pr-1 py-1 cursor-pointer group ${
-          selectedSel === node.selector ? 'bg-black/5' : 'hover:bg-black/5'
+        className={`flex items-center gap-1 rounded-lg pr-1 py-1 cursor-pointer group ${
+          selectedSel === node.selector ? 'bg-[#ececef]' : 'hover:bg-[#f0f0f3]'
         }`}
         style={{ paddingLeft: 8 + depth * 12 }}
         onClick={() => onSelect(node.selector)}
@@ -96,15 +96,15 @@ function LayerNode({ node, depth, onSelect, selectedSel, lockedMap, hiddenMap, o
               e.stopPropagation();
               setOpen((o) => !o);
             }}
-            className="text-zinc-600 hover:text-zinc-600 shrink-0"
+            className="cui-sub hover:text-black shrink-0"
           >
             {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
           </button>
         ) : (
           <span className="w-[11px] shrink-0" />
         )}
-        <span className="text-[10px] font-mono bg-black/5 text-zinc-600 rounded px-1 py-px shrink-0">{node.tag}</span>
-        <span className={`text-[12px] truncate flex-1 ${isHidden ? 'line-through text-zinc-600' : 'text-zinc-500'}`}>{node.text || node.tag}</span>
+        <span className="text-[10px] font-mono bg-[#ececef] cui-sub rounded px-1 py-px shrink-0">{node.tag}</span>
+        <span className={`text-[12px] truncate flex-1 ${isHidden ? 'line-through cui-faint' : 'cui-sub'}`}>{node.text || node.tag}</span>
         <button
           title={isHidden ? 'Show' : 'Hide'}
           aria-label={isHidden ? 'Show layer' : 'Hide layer'}
@@ -112,7 +112,7 @@ function LayerNode({ node, depth, onSelect, selectedSel, lockedMap, hiddenMap, o
             e.stopPropagation();
             onToggleHide(node.selector);
           }}
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-zinc-500 hover:text-black shrink-0"
+          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 cui-sub hover:text-black shrink-0"
         >
           {isHidden ? <EyeOff size={11} /> : <Eye size={11} />}
         </button>
@@ -123,7 +123,7 @@ function LayerNode({ node, depth, onSelect, selectedSel, lockedMap, hiddenMap, o
             e.stopPropagation();
             onToggleLock(node.selector);
           }}
-          className={`shrink-0 ${isLocked ? 'text-zinc-900' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-zinc-500 hover:text-black'}`}
+          className={`shrink-0 ${isLocked ? 'cui-ink' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 cui-sub hover:text-black'}`}
         >
           {isLocked ? <Lock size={11} /> : <LockOpen size={11} />}
         </button>
@@ -139,12 +139,15 @@ function LayersPanel({ tree, onSelect, onRefresh, selectedSel, lockedMap, hidden
   return (
     <div className="h-full flex flex-col min-h-0">
       <div className="flex items-center px-3 py-2">
-        <span className="text-[12px] font-medium text-zinc-700">Layers</span>
-        <button onClick={onRefresh} title="Refresh layers" className="ml-auto text-zinc-500 hover:text-black"><RefreshCw size={12} /></button>
+        <span className="text-[12px] font-medium cui-ink">Layers</span>
+        <button onClick={onRefresh} title="Refresh layers" className="ml-auto cui-iconbtn"><RefreshCw size={12} /></button>
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-2 min-h-0">
         {!tree || tree.length === 0 ? (
-          <p className="text-[12px] text-zinc-500 px-2">No layers yet — generate a page first, then refresh.</p>
+          <div className="mx-1 mt-1 cui-card !shadow-none p-3 text-center">
+            <p className="text-[12px] cui-sub">No layers yet</p>
+            <p className="text-[11px] cui-faint mt-0.5">Generate a page first, then refresh.</p>
+          </div>
         ) : (
           tree.map((n, i) => (
             <LayerNode key={n.selector + i} node={n} depth={0} onSelect={onSelect} selectedSel={selectedSel} lockedMap={lockedMap} hiddenMap={hiddenMap} onToggleLock={onToggleLock} onToggleHide={onToggleHide} />
@@ -152,8 +155,8 @@ function LayersPanel({ tree, onSelect, onRefresh, selectedSel, lockedMap, hidden
         )}
       </div>
       {selection && (
-        <div className="shrink-0 border-t border-black/10 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Align selection</div>
+        <div className="shrink-0 border-t cui-line px-3 py-2">
+          <div className="cui-label mb-1.5">Align selection</div>
           <div className="flex gap-1">
             {[
               { id: 'left', icon: AlignLeft },
@@ -164,7 +167,7 @@ function LayersPanel({ tree, onSelect, onRefresh, selectedSel, lockedMap, hidden
                 key={a.id}
                 onClick={() => onAlign(a.id)}
                 title={'Align ' + a.id}
-                className="flex-1 h-8 rounded-lg bg-black/5 hover:bg-black/5 text-zinc-600 hover:text-black flex items-center justify-center"
+                className="flex-1 h-8 rounded-lg cui-inset cui-sub hover:text-black flex items-center justify-center"
               >
                 <a.icon size={14} />
               </button>
@@ -173,13 +176,13 @@ function LayersPanel({ tree, onSelect, onRefresh, selectedSel, lockedMap, hidden
         </div>
       )}
       {comments?.length > 0 && (
-        <div className="shrink-0 border-t border-black/10 px-3 py-2 max-h-32 overflow-y-auto">
-          <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">Comments · {comments.length}</div>
+        <div className="shrink-0 border-t cui-line px-3 py-2 max-h-32 overflow-y-auto">
+          <div className="cui-label mb-1.5">Comments · {comments.length}</div>
           {comments.map((c) => (
-            <div key={c.id} className="flex items-center gap-1.5 text-[12px] text-zinc-500 py-0.5">
-              <MessageSquare size={11} className="shrink-0 text-zinc-900" />
+            <div key={c.id} className="flex items-center gap-1.5 text-[12px] cui-sub py-0.5">
+              <MessageSquare size={11} className="shrink-0 cui-ink" />
               <button onClick={() => onSelectComment(c.selector)} className="flex-1 truncate text-left hover:text-black">{c.text}</button>
-              <button onClick={() => onDeleteComment(c.id)} className="text-zinc-600 hover:text-red-600 shrink-0"><X size={11} /></button>
+              <button onClick={() => onDeleteComment(c.id)} className="cui-faint hover:text-red-600 shrink-0"><X size={11} /></button>
             </div>
           ))}
         </div>
@@ -214,7 +217,7 @@ function Copyable({ value, children }) {
       title={failed ? 'Copy failed — clipboard unavailable' : 'Copy'}
     >
       {children}
-      {ok ? <Check size={10} className="text-emerald-600" /> : <Copy size={10} className="text-zinc-600" />}
+      {ok ? <Check size={10} className="text-emerald-600" /> : <Copy size={10} className="cui-faint" />}
     </button>
   );
 }
@@ -222,30 +225,30 @@ function Copyable({ value, children }) {
 function AssetsPanel({ assets }) {
   return (
     <div className="h-full overflow-y-auto p-3 min-h-0">
-      <div className="text-[11px] font-medium text-zinc-600 mb-2">Images · {assets.images.length}</div>
-      {assets.images.length === 0 && <p className="text-[11px] text-zinc-600 mb-3">No image URLs found in project files.</p>}
+      <div className="text-[11px] font-medium cui-sub mb-2">Images · {assets.images.length}</div>
+      {assets.images.length === 0 && <p className="text-[11px] cui-faint mb-3">No image URLs found in project files.</p>}
       <div className="grid grid-cols-3 gap-1.5 mb-4">
         {assets.images.map((u) => (
           <Copyable key={u} value={u}>
-            <img src={u} alt="" loading="lazy" className="w-full h-14 object-cover rounded-lg border border-black/10" />
+            <img src={u} alt="" loading="lazy" className="w-full h-14 object-cover rounded-lg border cui-line" />
           </Copyable>
         ))}
       </div>
-      <div className="text-[11px] font-medium text-zinc-600 mb-2">Colors · {assets.colors.length}</div>
-      {assets.colors.length === 0 && <p className="text-[11px] text-zinc-600 mb-3">No hex colors found yet.</p>}
+      <div className="text-[11px] font-medium cui-sub mb-2">Colors · {assets.colors.length}</div>
+      {assets.colors.length === 0 && <p className="text-[11px] cui-faint mb-3">No hex colors found yet.</p>}
       <div className="flex flex-wrap gap-1.5 mb-4">
         {assets.colors.map((c) => (
           <Copyable key={c} value={c}>
-            <span className="flex items-center gap-1 border border-black/10 rounded-full pl-1 pr-2 py-0.5">
-              <span className="w-4 h-4 rounded-full border border-black/40" style={{ background: c }} />
-              <span className="text-[10px] font-mono text-zinc-500">{c}</span>
+            <span className="flex items-center gap-1 border cui-line rounded-full pl-1 pr-2 py-0.5 cui-panel">
+              <span className="w-4 h-4 rounded-full border cui-line" style={{ background: c }} />
+              <span className="text-[10px] font-mono cui-sub">{c}</span>
             </span>
           </Copyable>
         ))}
       </div>
-      <div className="text-[11px] font-medium text-zinc-600 mb-2">Fonts · {assets.fonts.length}</div>
+      <div className="text-[11px] font-medium cui-sub mb-2">Fonts · {assets.fonts.length}</div>
       {assets.fonts.map((f, i) => (
-        <div key={i} className="text-[11px] text-zinc-500 truncate mb-1">{f}</div>
+        <div key={i} className="text-[11px] cui-sub truncate mb-1">{f}</div>
       ))}
     </div>
   );
@@ -262,12 +265,12 @@ export default function LeftPanel(props) {
   ];
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center gap-3 px-3 pt-2.5 pb-2 border-b border-black/10 text-xs shrink-0">
+      <div className="mx-3 mt-2.5 mb-2 cui-seg text-xs shrink-0">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={tab === t.id ? 'text-zinc-900 font-medium' : 'text-zinc-500 hover:text-zinc-600'}
+            className={tab === t.id ? 'cui-seg-on flex-1 py-1.5 text-xs' : 'flex-1 py-1.5 text-xs cui-sub hover:text-black'}
           >
             {t.label}
           </button>

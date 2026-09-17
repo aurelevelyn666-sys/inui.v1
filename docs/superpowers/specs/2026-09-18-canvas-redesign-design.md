@@ -56,6 +56,8 @@ Framer dark canvas as anti-reference for tone). Chat/home are untouched.
 ## Application map (canvas files only)
 - `index.css`: new `cui-*` block.
 - `App.jsx` canvas view only: frame wrapper, topbar restyle, branch pill tint.
+  (No IconRail in canvas view — the rail stays a chat/home component, so no
+  rail changes were needed after all.)
 - `PreviewCanvas.jsx`: toolbar pills, breakpoint bar segmented, dotted stage,
   coachmark (already black pill — verify), `CtxMenu` card.
 - `LeftPanel.jsx`: Pages/Layers/Assets cards, layer rows, search field.

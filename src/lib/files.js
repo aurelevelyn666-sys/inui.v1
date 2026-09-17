@@ -889,7 +889,7 @@ const EDITOR_SCRIPT = `
     if (!m) return String(c || '');
     var p = m[1].split(',').map(function (x) { return parseFloat(x); });
     if (p.length >= 4 && p[3] === 0) return 'transparent';
-    function h(n) { n = Math.max(0, Math.min(255, Math.round(n))); var s = n.toString(16); return s.length < 2 ? '0' + s : s; }
+    function h(n) { n = Math.round(n); if (!isFinite(n)) return '00'; n = Math.max(0, Math.min(255, n)); var s = n.toString(16); return s.length < 2 ? '0' + s : s; }
     var hex = '#' + h(p[0]) + h(p[1]) + h(p[2]);
     if (p.length >= 4 && p[3] < 1) hex += h(p[3] * 255);
     return hex;

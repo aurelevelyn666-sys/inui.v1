@@ -46,20 +46,20 @@ function CField({ display, onCommit, type = 'text' }) {
         if (e.key === 'Enter') commit();
         if (e.key === 'Escape') setV(null);
       }}
-      className="inu-input tabular-nums"
+      className="cui-input tabular-nums"
     />
   );
 }
 
 function Seg({ options, onPick, active }) {
   return (
-    <div className="inu-seg">
+    <div className="cui-seg">
       {options.map((o) => (
         <button
           key={o.v}
           title={o.label}
           onClick={() => onPick(o.v)}
-          className={active === o.v ? '!bg-black/10 !text-zinc-900' : ''}
+          className={active === o.v ? 'cui-seg-on' : ''}
         >
           {o.icon ? <o.icon size={13} /> : o.label}
         </button>
@@ -75,7 +75,7 @@ function CurSelect({ current, options, onPick, fmt }) {
   const inList = options.some((o) => o.v === norm);
   return (
     <select
-      className="inu-input"
+      className="cui-input"
       value={inList ? norm : cur ? '__cur' : ''}
       onChange={(e) => {
         // Picking "—" clears the property (parent drops empty values).
@@ -157,28 +157,28 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
     .slice(-3);
 
   return (
-    <div className="rounded-xl p-3 mb-2 bg-[#ffffff] border border-black/10">
+    <div className="cui-card p-3 mb-2">
       <div className="flex items-center gap-1.5 mb-0.5">
-        <span className="text-[10px] bg-black/5 text-zinc-900 rounded px-1.5 py-0.5 font-mono">{selection.tag}</span>
-        <span className="text-[11px] text-zinc-500 truncate">{crumbs.join(' › ')}</span>
+        <span className="text-[10px] bg-[#f0f0f3] cui-ink rounded px-1.5 py-0.5 font-mono">{selection.tag}</span>
+        <span className="text-[11px] cui-sub truncate">{crumbs.join(' › ')}</span>
       </div>
       {selection.className && (
-        <div className="text-[10px] text-zinc-600 truncate mb-1 font-mono">.{selection.className.split(' ').slice(0, 4).join('.')}</div>
+        <div className="text-[10px] cui-sub truncate mb-1 font-mono">.{selection.className.split(' ').slice(0, 4).join('.')}</div>
       )}
 
       {/* Layout */}
-      <div className="inu-sect">Layout</div>
+      <div className="cui-label cui-sect-m">Layout</div>
       <div className="grid grid-cols-2 gap-1.5 mb-1.5">
         <div>
-          <span className="inu-label">Position X</span>
+          <span className="cui-label">Position X</span>
           <CField display={String(Math.round(pos.x))} type="number" onCommit={(v) => move({ x: parseFloat(v) || 0 })} />
         </div>
         <div>
-          <span className="inu-label">Position Y</span>
+          <span className="cui-label">Position Y</span>
           <CField display={String(Math.round(pos.y))} type="number" onCommit={(v) => move({ y: parseFloat(v) || 0 })} />
         </div>
         <div>
-          <span className="inu-label">Width</span>
+          <span className="cui-label">Width</span>
           <CField
             display={size.w || c.width || (selection.w ? selection.w + 'px' : '')}
             onCommit={(v) => {
@@ -191,7 +191,7 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
           />
         </div>
         <div>
-          <span className="inu-label">Height</span>
+          <span className="cui-label">Height</span>
           <div className="flex gap-1.5">
             <CField
               display={size.h || c.height || (selection.h ? selection.h + 'px' : '')}
@@ -206,7 +206,7 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
             <button
               onClick={() => setLinked((l) => !l)}
               title="Lock aspect ratio"
-              className={`w-9 shrink-0 rounded-lg border flex items-center justify-center ${linked ? 'border-black text-zinc-900' : 'border-black/10 text-zinc-500 hover:text-black'}`}
+              className={`w-9 shrink-0 rounded-lg border flex items-center justify-center ${linked ? 'cui-line cui-ink' : 'cui-line cui-sub hover:text-black'}`}
             >
               {linked ? <Link2 size={13} /> : <Unlink size={13} />}
             </button>
@@ -214,7 +214,7 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
         </div>
       </div>
       <div className="mb-1.5">
-        <span className="inu-label">Display</span>
+        <span className="cui-label">Display</span>
         <CurSelect current={c.display} onPick={(v) => set({ display: v })} options={[
           { v: 'block', label: 'Block' },
           { v: 'flex', label: 'Flex' },
@@ -225,18 +225,18 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
       </div>
       <div className="grid grid-cols-2 gap-1.5 mb-1.5">
         <div>
-          <span className="inu-label">Direction</span>
+          <span className="cui-label">Direction</span>
           <CurSelect current={c.flexDirection} onPick={(v) => set({ display: 'flex', flexDirection: v })} options={[
             { v: 'row', label: '→ Row' },
             { v: 'column', label: '↓ Column' }
           ]} />
         </div>
         <div>
-          <span className="inu-label">Gap</span>
+          <span className="cui-label">Gap</span>
           <CField display={c.gap && c.gap !== 'normal' ? c.gap : ''} onCommit={(v) => set({ gap: px(v) })} />
         </div>
         <div>
-          <span className="inu-label">Align</span>
+          <span className="cui-label">Align</span>
           <CurSelect current={c.alignItems} onPick={(v) => set({ alignItems: v })} options={[
             { v: 'flex-start', label: 'Start' },
             { v: 'center', label: 'Center' },
@@ -245,7 +245,7 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
           ]} />
         </div>
         <div>
-          <span className="inu-label">Justify</span>
+          <span className="cui-label">Justify</span>
           <CurSelect current={c.justifyContent} onPick={(v) => set({ justifyContent: v })} options={[
             { v: 'flex-start', label: 'Start' },
             { v: 'center', label: 'Center' },
@@ -253,58 +253,58 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
             { v: 'space-between', label: 'Between' }
           ]} />
         </div>
-        <div><span className="inu-label">Padding</span><CField display={c.padding || ''} onCommit={(v) => set({ padding: px(v) })} /></div>
-        <div><span className="inu-label">Margin</span><CField display={c.margin || ''} onCommit={(v) => set({ margin: px(v) })} /></div>
+        <div><span className="cui-label">Padding</span><CField display={c.padding || ''} onCommit={(v) => set({ padding: px(v) })} /></div>
+        <div><span className="cui-label">Margin</span><CField display={c.margin || ''} onCommit={(v) => set({ margin: px(v) })} /></div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="inu-label" style={{ margin: 0 }}>Rotate</span>
+        <span className="cui-label" style={{ margin: 0 }}>Rotate</span>
         <input
           type="range" min={-180} max={180} value={pos.rot}
           onChange={(e) => move({ rot: Number(e.target.value) })}
           className="inu-range flex-1"
         />
-        <span className="text-[12px] text-zinc-600 tabular-nums w-10 text-right">{Math.round(pos.rot)}°</span>
+        <span className="text-[12px] cui-sub tabular-nums w-10 text-right">{Math.round(pos.rot)}°</span>
       </div>
 
       {/* Text */}
-      <div className="inu-sect">Text</div>
+      <div className="cui-label cui-sect-m">Text</div>
       <div className="flex gap-1.5 mb-1.5">
-        <input value={text} onChange={(e) => setText(e.target.value)} className="inu-input" placeholder="element text…" />
+        <input value={text} onChange={(e) => setText(e.target.value)} className="cui-input" placeholder="element text…" />
         <button
           onClick={() => text !== selection.text && onApplyText(sel, text)}
-          className="text-[12px] bg-black/5 text-zinc-900 rounded-lg px-2.5 hover:bg-black/10 shrink-0"
+          className="text-[12px] bg-[#f0f0f3] cui-ink rounded-lg px-2.5 hover:bg-[#e4e4e7] shrink-0"
         >
           Set
         </button>
       </div>
       <div className="grid grid-cols-2 gap-1.5 mb-1.5">
         <div>
-          <span className="inu-label">Font</span>
+          <span className="cui-label">Font</span>
           <CurSelect current={c.fontFamily} onPick={(v) => set({ fontFamily: v })} fmt={(v) => short(v, 18)} options={FONTS} />
         </div>
         <div>
-          <span className="inu-label">Weight</span>
+          <span className="cui-label">Weight</span>
           <CurSelect current={c.fontWeight} onPick={(v) => set({ fontWeight: v })} options={WEIGHTS} />
         </div>
-        <div><span className="inu-label">Size</span><CField display={c.fontSize || '16px'} onCommit={(v) => set({ fontSize: px(v) })} /></div>
-        <div><span className="inu-label">Spacing</span><CField display={c.letterSpacing && c.letterSpacing !== 'normal' ? c.letterSpacing : '0px'} onCommit={(v) => set({ letterSpacing: px(v) })} /></div>
+        <div><span className="cui-label">Size</span><CField display={c.fontSize || '16px'} onCommit={(v) => set({ fontSize: px(v) })} /></div>
+        <div><span className="cui-label">Spacing</span><CField display={c.letterSpacing && c.letterSpacing !== 'normal' ? c.letterSpacing : '0px'} onCommit={(v) => set({ letterSpacing: px(v) })} /></div>
       </div>
       <div className="grid grid-cols-2 gap-1.5 mb-1.5">
         <div>
-          <span className="inu-label">Color</span>
+          <span className="cui-label">Color</span>
           <div className="flex gap-1.5">
             <CField display={c.color || '#ffffff'} onCommit={(v) => set({ color: v })} />
             {/^#[0-9a-f]{6}$/i.test(c.color || '') && (
               <input
                 type="color" defaultValue={c.color} title="Pick color"
                 onChange={(e) => set({ color: e.target.value })}
-                className="w-9 h-9 shrink-0 rounded-lg bg-transparent cursor-pointer border border-black/10 p-0.5"
+                className="w-9 h-9 shrink-0 rounded-lg bg-transparent cursor-pointer border cui-line p-0.5"
               />
             )}
           </div>
         </div>
         <div>
-          <span className="inu-label">Align</span>
+          <span className="cui-label">Align</span>
           <Seg
             active={c.textAlign === 'start' ? 'left' : c.textAlign}
             options={[
@@ -319,11 +319,11 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
       </div>
       <div className="grid grid-cols-2 gap-1.5">
         <div>
-          <span className="inu-label">Line height</span>
+          <span className="cui-label">Line height</span>
           <CField display={c.lineHeight && c.lineHeight !== 'normal' ? c.lineHeight : ''} onCommit={(v) => set({ lineHeight: v })} />
         </div>
         <div>
-          <span className="inu-label">Transform</span>
+          <span className="cui-label">Transform</span>
           <CurSelect current={c.textTransform === 'none' ? '' : c.textTransform} onPick={(v) => set({ textTransform: v })} options={[
             { v: 'uppercase', label: 'UPPER' },
             { v: 'lowercase', label: 'lower' },
@@ -331,37 +331,37 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
           ]} />
         </div>
       </div>
-      <span className="inu-label" style={{ marginTop: 8 }}>Style</span>
-      <div className="inu-seg">
+      <span className="cui-label" style={{ marginTop: 8 }}>Style</span>
+      <div className="cui-seg">
         {[
           { k: 'b', label: 'B', cls: 'font-bold' },
           { k: 'i', label: 'I', cls: 'italic' },
           { k: 'u', label: 'U', cls: 'underline' },
           { k: 's', label: 'S', cls: 'line-through' }
         ].map((b) => (
-          <button key={b.k} onClick={() => toggleStyle(b.k)} className={`${b.cls} ${toggles[b.k] ? '!bg-black !text-white' : ''}`}>
+          <button key={b.k} onClick={() => toggleStyle(b.k)} className={`${b.cls} ${toggles[b.k] ? 'cui-seg-on' : ''}`}>
             {b.label}
           </button>
         ))}
       </div>
 
       {/* Effects */}
-      <div className="inu-sect">Effects</div>
+      <div className="cui-label cui-sect-m">Effects</div>
       <div className="grid grid-cols-2 gap-1.5 items-end">
         <div>
-          <span className="inu-label">Background</span>
+          <span className="cui-label">Background</span>
           <div className="flex gap-1.5">
             <CField display={c.background || 'transparent'} onCommit={(v) => set({ background: v })} />
             <button
               onClick={() => set({ background: 'transparent' })}
               title="Transparent"
-              className="w-9 h-9 shrink-0 rounded-lg border border-black/10"
+              className="w-9 h-9 shrink-0 rounded-lg border cui-line"
               style={{ background: 'repeating-conic-gradient(#666 0 25%, #fff 0 50%) 0 0 / 12px 12px' }}
             />
           </div>
         </div>
         <div>
-          <span className="inu-label">Opacity · {opacity}%</span>
+          <span className="cui-label">Opacity · {opacity}%</span>
           <input
             type="range" min={5} max={100} value={opacity}
             onChange={(e) => {
@@ -371,9 +371,9 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
             className="inu-range"
           />
         </div>
-        <div><span className="inu-label">Radius</span><CField display={c.radius && c.radius !== '0px' ? c.radius : ''} onCommit={(v) => set({ borderRadius: px(v) })} /></div>
+        <div><span className="cui-label">Radius</span><CField display={c.radius && c.radius !== '0px' ? c.radius : ''} onCommit={(v) => set({ borderRadius: px(v) })} /></div>
         <div>
-          <span className="inu-label">Shadow</span>
+          <span className="cui-label">Shadow</span>
           <Seg
             options={[{ v: 'none', label: 'None' }, { v: 'Soft', label: 'Soft' }, { v: 'Medium', label: 'Med' }, { v: 'Strong', label: 'Strong' }]}
             onPick={(v) => set({ boxShadow: SHADOWS[v] })}
@@ -381,9 +381,9 @@ function DesignEditor({ selection, onApplyStyle, onApplyText }) {
         </div>
       </div>
       {c.boxShadow ? (
-        <div className="text-[10px] text-zinc-500 truncate mt-1.5 font-mono" title={c.boxShadow}>shadow: {short(c.boxShadow, 44)}</div>
+        <div className="text-[10px] cui-sub truncate mt-1.5 font-mono" title={c.boxShadow}>shadow: {short(c.boxShadow, 44)}</div>
       ) : null}
-      <p className="text-[11px] text-zinc-500 mt-2">Edits apply instantly and persist as canvas overrides.</p>
+      <p className="text-[11px] cui-sub mt-2">Edits apply instantly and persist as canvas overrides.</p>
     </div>
   );
 }
@@ -399,27 +399,32 @@ export default function Inspector(props) {
       {selection ? (
         <DesignEditor key={selection.selector} selection={selection} onApplyStyle={onApplyStyle} onApplyText={onApplyText} />
       ) : (
-        <div className="rounded-xl p-3 mb-3 text-[13px] text-zinc-500 bg-[#ffffff] border border-black/10 leading-relaxed">
+        <div className="cui-card p-3 mb-3 text-[13px] cui-sub leading-relaxed">
           Click any element — drag it anywhere, double-click to edit text. Arrows nudge · Del hides · Esc clears · right-click for more.
         </div>
       )}
 
-      <h3 className="inu-sect" style={{ marginTop: 4 }}>
-        Canvas edits {total > 0 && <span className="text-zinc-700">· {total}</span>}
+      <h3 className="cui-label cui-sect-m" style={{ marginTop: 4 }}>
+        Canvas edits {total > 0 && <span className=" cui-sub">· {total}</span>}
       </h3>
-      {total === 0 && <p className="text-[12px] text-zinc-500 mb-3">Nothing yet.</p>}
+      {total === 0 && (
+        <div className="cui-card !shadow-none p-3 mb-3 text-center">
+          <p className="text-[12px] cui-sub">Nothing yet.</p>
+          <p className="text-[11px] cui-faint mt-0.5">Select an element and edit — changes land here.</p>
+        </div>
+      )}
       <div className="space-y-1.5 mb-3">
         {styleEntries.map(([sel, css]) => (
-          <div key={'s' + sel} className="text-[11px] bg-[#ffffff] border border-black/10 rounded-lg px-2 py-1.5 flex items-center gap-1.5">
-            <span className="flex-1 truncate text-zinc-500 font-mono">{sel.replace(/^body > /, '').slice(-42)}</span>
-            <span className="text-zinc-600">{Object.keys(css).length} props</span>
-            <button onClick={() => onRemoveOverride('styles', sel)} className="text-zinc-600 hover:text-red-600"><Trash2 size={11} /></button>
+          <div key={'s' + sel} className="text-[11px] cui-panel border cui-line rounded-lg px-2 py-1.5 flex items-center gap-1.5">
+            <span className="flex-1 truncate cui-sub font-mono">{sel.replace(/^body > /, '').slice(-42)}</span>
+            <span className="cui-sub">{Object.keys(css).length} props</span>
+            <button onClick={() => onRemoveOverride('styles', sel)} className="cui-faint hover:text-red-600"><Trash2 size={11} /></button>
           </div>
         ))}
         {textEntries.map(([sel, t]) => (
-          <div key={'t' + sel} className="text-[11px] bg-[#ffffff] border border-black/10 rounded-lg px-2 py-1.5 flex items-center gap-1.5">
-            <span className="flex-1 truncate text-zinc-500">“{String(t).slice(0, 40)}”</span>
-            <button onClick={() => onRemoveOverride('texts', sel)} className="text-zinc-600 hover:text-red-600"><Trash2 size={11} /></button>
+          <div key={'t' + sel} className="text-[11px] cui-panel border cui-line rounded-lg px-2 py-1.5 flex items-center gap-1.5">
+            <span className="flex-1 truncate cui-sub">“{String(t).slice(0, 40)}”</span>
+            <button onClick={() => onRemoveOverride('texts', sel)} className="cui-faint hover:text-red-600"><Trash2 size={11} /></button>
           </div>
         ))}
       </div>
@@ -428,11 +433,11 @@ export default function Inspector(props) {
           <button
             onClick={onFoldIntoCode}
             disabled={folding}
-            className="inu-btn-blue w-full text-[13px] rounded-full py-2 flex items-center justify-center gap-1.5 mb-2"
+            className="cui-btn w-full text-[13px] py-2 flex items-center justify-center gap-1.5 mb-2"
           >
             <Sparkles size={12} /> {folding ? 'Asking agent…' : 'Fold edits into code'}
           </button>
-          <button onClick={onClearOverrides} className="w-full text-[12px] text-zinc-500 hover:text-red-600 py-1">
+          <button onClick={onClearOverrides} className="w-full text-[12px] cui-sub hover:text-red-600 py-1">
             Clear all canvas edits
           </button>
         </>

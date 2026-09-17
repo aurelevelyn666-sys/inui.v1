@@ -308,32 +308,32 @@ export default function PreviewCanvas(props) {
   return (
     <div className="flex flex-col h-full min-h-0 min-w-0 relative">
       {/* toolbar */}
-      <div className="flex items-center gap-1.5 px-3 h-11 border-b border-black/10 text-xs shrink-0">
-        <button onClick={() => setRefreshKey((k) => k + 1)} title="Reload preview" className="p-1.5 text-zinc-500 hover:text-zinc-700">
+      <div className="flex items-center gap-1 px-3 h-11 border-b cui-line text-xs shrink-0">
+        <button onClick={() => setRefreshKey((k) => k + 1)} title="Reload preview" className="cui-iconbtn">
           <RefreshCw size={13} />
         </button>
-        <button onClick={openInTab} title="Open in new tab" className="p-1.5 text-zinc-500 hover:text-zinc-700">
+        <button onClick={openInTab} title="Open in new tab" className="cui-iconbtn">
           <ExternalLink size={13} />
         </button>
-        <button onClick={onDownloadHtml} title="Download standalone HTML" className="p-1.5 text-zinc-500 hover:text-zinc-700">
+        <button onClick={onDownloadHtml} title="Download standalone HTML" className="cui-iconbtn">
           <Download size={13} />
         </button>
         {onExportZip && (
-          <button onClick={onExportZip} title="Export project as ZIP (all files + runnable index.html)" className="p-1.5 text-zinc-500 hover:text-zinc-700">
+          <button onClick={onExportZip} title="Export project as ZIP (all files + runnable index.html)" className="cui-iconbtn">
             <FolderDown size={13} />
           </button>
         )}
         {selection && (
-          <div className="ml-auto flex items-center gap-1.5 bg-[#ffffff] border border-black/10 rounded-full pl-2.5 pr-1 py-0.5 max-w-[280px]">
+          <div className="ml-auto flex items-center gap-1.5 cui-panel border cui-line rounded-full pl-2.5 pr-1 py-0.5 max-w-[280px]">
             <span className="text-[10px] font-mono bg-black text-white rounded px-1.5 py-px shrink-0">{selection.tag}</span>
-            <span className="text-[11px] text-zinc-600 truncate" title={selection.selector}>{(selection.text || 'no text').slice(0, 30)}</span>
+            <span className="text-[11px] cui-sub truncate" title={selection.selector}>{(selection.text || 'no text').slice(0, 30)}</span>
             <button
               onClick={() => {
                 post({ type: 'inui:clear' });
                 onDeselect();
               }}
               title="Clear selection (Esc)"
-              className="w-5 h-5 rounded-full text-zinc-500 hover:text-black hover:bg-black/5 flex items-center justify-center shrink-0"
+              className="w-5 h-5 rounded-full cui-sub hover:text-black hover:bg-[#f0f0f3] flex items-center justify-center shrink-0"
             >
               <X size={11} />
             </button>
@@ -343,25 +343,25 @@ export default function PreviewCanvas(props) {
 
       {/* canvas — the frame is a fixed viewport (sized from the stage) and
           scrolls internally like a browser; the bar on top switches width */}
-      <div className="mx-6 mt-5 mb-2 shrink-0 flex items-center gap-1.5 bg-[#f4f4f5] border border-black/10 rounded-lg pl-2.5 pr-1 py-1 text-[11px]">
+      <div className="mx-6 mt-5 mb-2 shrink-0 flex items-center gap-1.5 cui-panel border cui-line rounded-xl pl-2.5 pr-1 py-1 text-[11px]">
         <button onClick={cycleWidth} title="Cycle breakpoint width" className="flex items-center gap-1.5 hover:opacity-80">
-          <Play size={9} className="text-zinc-600" />
-          <span className="font-medium text-zinc-600">{width.id === 'full' ? 'Fluid' : width.label}</span>
-          <span className="text-zinc-600 tabular-nums">{typeof width.width === 'number' ? width.width : ''}</span>
+          <Play size={9} className="cui-sub" />
+          <span className="font-medium cui-sub">{width.id === 'full' ? 'Fluid' : width.label}</span>
+          <span className="cui-sub tabular-nums">{typeof width.width === 'number' ? width.width : ''}</span>
         </button>
         <div className="ml-auto flex items-center gap-0.5">
-          <button onClick={() => stepZoom(-1)} title="Zoom out (Ctrl+-)" className="px-1.5 text-zinc-500 hover:text-black">−</button>
-          <span className="text-zinc-600 tabular-nums text-[11px] w-10 text-center" title={effZoom < zoom ? 'Zoom (auto-fit capped) — Ctrl+0 resets' : 'Zoom (Ctrl+0 resets)'}>{Math.round(effZoom * 100)}%</span>
-          <button onClick={() => stepZoom(1)} title="Zoom in (Ctrl+=)" className="px-1.5 text-zinc-500 hover:text-black">+</button>
+          <button onClick={() => stepZoom(-1)} title="Zoom out (Ctrl+-)" className="px-1.5 cui-sub hover:text-black">−</button>
+          <span className="cui-sub tabular-nums text-[11px] w-10 text-center" title={effZoom < zoom ? 'Zoom (auto-fit capped) — Ctrl+0 resets' : 'Zoom (Ctrl+0 resets)'}>{Math.round(effZoom * 100)}%</span>
+          <button onClick={() => stepZoom(1)} title="Zoom in (Ctrl+=)" className="px-1.5 cui-sub hover:text-black">+</button>
         </div>
-        <button onClick={onAddPage} title="New page" className="w-6 h-6 rounded-md hover:bg-black/5 text-zinc-500 hover:text-black flex items-center justify-center">
+        <button onClick={onAddPage} title="New page" className="cui-iconbtn" style={{ width: 24, height: 24 }}>
           <Plus size={13} />
         </button>
       </div>
       <div
         ref={scrollRef}
         onMouseDown={onCanvasMouseDown}
-        className="flex-1 overflow-auto min-h-0 bg-zinc-200"
+        className="flex-1 overflow-auto min-h-0 cui-stage-dots"
         style={{ cursor: spaceDown ? 'grab' : undefined }}
         onScroll={() => setMenu(null)}
       >
@@ -379,7 +379,7 @@ export default function PreviewCanvas(props) {
                 sandbox="allow-scripts"
                 srcDoc={built.srcDoc}
                 onLoad={sendInit}
-                className="bg-white rounded-md border border-black/10 block mx-auto"
+                className="cui-panel rounded-xl border cui-line block mx-auto"
                 style={{ width: width.width, maxWidth: '100%', height: stageH }}
               />
             </div>
@@ -400,7 +400,7 @@ export default function PreviewCanvas(props) {
       )}
 
       {!hintSeen && !selection && !built.error && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-zinc-900 text-white text-[12px] rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl max-w-[92%]">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 cui-btn text-[12px] pl-3 pr-1.5 py-1.5 shadow-2xl max-w-[92%]">
           <MousePointerClick size={13} className="shrink-0" />
           <span className="truncate">Click any element to select it — drag to move, double-click text to edit, right-click for more</span>
           <button

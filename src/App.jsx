@@ -1950,27 +1950,28 @@ export default function App() {
     );
   }
   return (
-    <div className="h-screen flex flex-col bg-[#ffffff] text-zinc-900">
+    <div className="h-screen flex flex-col cui-app text-zinc-900 p-2 sm:p-3 gap-2 sm:gap-3">
+      <div className="flex-1 min-h-0 flex flex-col cui-frame">
       {/* top bar */}
-      <div className="h-11 shrink-0 border-b border-black/10 flex items-center gap-1 px-3 relative z-30">
-        <button onClick={() => setView('home')} title="Home" className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-black hover:bg-black/5">
+      <div className="h-11 shrink-0 border-b cui-line flex items-center gap-1 px-3 relative z-30">
+        <button onClick={() => setView('home')} title="Home" className="cui-iconbtn">
           <Home size={14} />
         </button>
-        <button onClick={() => setView('chat')} title="Back to chat" className="text-[11px] text-zinc-500 hover:text-zinc-700 px-2 py-1 rounded-lg hover:bg-black/5 hidden sm:block">Chat</button>
-        <span className="text-[11px] text-zinc-500 border border-black/10 rounded-lg px-2 py-0.5 hidden sm:block">Canvas</span>
+          <button onClick={() => setView('chat')} title="Back to chat" className="text-[11px] cui-sub hover:text-black px-2 py-1 rounded-lg hover:bg-[#f0f0f3] hidden sm:block">Chat</button>
+        <span className="text-[11px] cui-sub border cui-line rounded-lg px-2 py-0.5 hidden sm:block">Canvas</span>
 
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 text-[13px]">
-          <span className="font-medium">Site</span>
+          <span className="font-medium cui-ink">Site</span>
           <div className="relative">
-            <button onClick={() => setBranchOpen((o) => !o)} className="flex items-center gap-1 text-[11px] text-zinc-500 border border-black/10 rounded-full px-2 py-0.5 hover:text-black hover:border-black/20">
+            <button onClick={() => setBranchOpen((o) => !o)} className="flex items-center gap-1 text-[11px] cui-info font-medium px-2 py-0.5">
               <GitBranch size={10} /> main <ChevronDown size={10} />
             </button>
             {branchOpen && (
               <>
               <div className="fixed inset-0 z-20" onClick={() => setBranchOpen(false)} />
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 w-64 bg-[#ffffff] border border-black/10 rounded-xl p-1.5 shadow-2xl z-30">
-                <div className="text-[10px] uppercase tracking-wider text-zinc-500 px-2 py-1">History · click to restore</div>
-                {versions.length === 0 && <div className="text-[11px] text-zinc-600 px-2 py-1.5">No snapshots yet.</div>}
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 w-64 cui-card p-1.5 z-30">
+                <div className="text-[10px] uppercase tracking-wider cui-faint px-2 py-1">History · click to restore</div>
+                {versions.length === 0 && <div className="text-[11px] cui-sub px-2 py-1.5">No snapshots yet.</div>}
                 {versions.slice(0, 8).map((v) => (
                   <button
                     key={v.id}
@@ -1978,7 +1979,7 @@ export default function App() {
                       restoreVersion(v.id);
                       setBranchOpen(false);
                     }}
-                    className="w-full text-left text-[11px] text-zinc-600 hover:bg-black/5 rounded-lg px-2 py-1.5 truncate"
+                    className="w-full text-left text-[11px] cui-sub hover:bg-[#f0f0f3] rounded-lg px-2 py-1.5 truncate"
                   >
                     {v.label}
                   </button>
@@ -1990,7 +1991,7 @@ export default function App() {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <button onClick={() => setSettingsOpen(true)} title="Settings" className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-black hover:bg-black/5">
+          <button onClick={() => setSettingsOpen(true)} title="Settings" className="cui-iconbtn" style={{ width: 32, height: 32 }}>
             <Settings size={15} />
           </button>
         </div>
@@ -1998,7 +1999,7 @@ export default function App() {
 
       <div className="flex-1 flex min-h-0">
         {/* left panel */}
-        <div className="w-[270px] shrink-0 border-r border-black/10 min-h-0 hidden sm:block">
+        <div className="w-[270px] shrink-0 border-r cui-line min-h-0 hidden sm:block cui-panel">
           <LeftPanel
             tab={leftTab}
             setTab={setLeftTab}
@@ -2128,8 +2129,8 @@ export default function App() {
         </div>
 
         {/* right panel: Agent | Style (Framer) */}
-        <div className="w-[280px] xl:w-[300px] shrink-0 border-l border-black/10 min-h-0 hidden md:flex flex-col">
-          <div className="flex items-center gap-4 px-4 pt-2.5 pb-2 border-b border-black/10 text-xs shrink-0">
+        <div className="w-[280px] xl:w-[300px] shrink-0 border-l cui-line min-h-0 hidden md:flex flex-col cui-panel">
+          <div className="mx-3 mt-2.5 mb-2 cui-seg text-xs shrink-0">
             {[
               { id: 'design', label: 'Design' },
               { id: 'agent', label: 'Agent' }
@@ -2137,7 +2138,7 @@ export default function App() {
               <button
                 key={t.id}
                 onClick={() => setRightTab(t.id)}
-                className={rightTab === t.id ? 'text-zinc-900 font-medium' : 'text-zinc-500 hover:text-zinc-600'}
+                className={rightTab === t.id ? 'cui-seg-on flex-1 py-1.5 text-xs' : 'flex-1 py-1.5 text-xs cui-sub hover:text-black'}
               >
                 {t.label}
               </button>
@@ -2230,6 +2231,8 @@ export default function App() {
             )}
           </div>
         </div>
+      </div>
+      {/* closes cui-frame */}
       </div>
       {settingsOpen && <SettingsModal settings={settings} onChange={updateSettings} onClose={() => setSettingsOpen(false)} initialTab={settingsTab} />}
     </div>

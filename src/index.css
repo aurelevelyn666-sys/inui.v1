@@ -137,6 +137,107 @@ html.dark .inu-seg button:hover { color: #f4f4f5; background: rgba(255, 255, 255
 html.dark .text-emerald-600 { color: #34d399; }
 html.dark .text-red-600 { color: #f87171; }
 
+/* ---- Canvas design system (cui-*) — light premium, canvas scope only ----
+   Explicit colors (never tailwind dark: variants), so these classes are
+   immune to the html.dark overrides above: the canvas stays light even when
+   the rest of the app is dark. Do NOT reuse cui-* outside canvas views. */
+.cui-app { background: #e9e9ed; }
+.cui-frame {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.cui-panel { background: #ffffff; }
+.cui-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+.cui-inset { background: #f4f4f6; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px; }
+.cui-ink { color: #131316; }
+.cui-sub { color: #6d6d74; }
+.cui-faint { color: #a3a3ab; }
+.cui-line { border-color: rgba(0, 0, 0, 0.08); }
+.cui-btn {
+  background: #101014;
+  color: #ffffff;
+  border-radius: 999px;
+  font-weight: 500;
+}
+.cui-btn:hover { background: #000000; }
+.cui-btn:disabled { opacity: 0.45; }
+.cui-btn-ghost {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  color: #131316;
+}
+.cui-btn-ghost:hover { border-color: rgba(0, 0, 0, 0.25); }
+.cui-seg { background: #f0f0f3; border-radius: 999px; padding: 2px; display: flex; gap: 2px; }
+.cui-seg-on {
+  background: #ffffff;
+  color: #131316;
+  font-weight: 500;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.cui-info { background: #e8effe; color: #2f6bff; border-radius: 999px; }
+.cui-input {
+  width: 100%;
+  background: #f4f4f6;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 7px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #131316;
+  outline: none;
+  min-width: 0;
+}
+.cui-input:focus { border-color: rgba(0, 0, 0, 0.22); }
+.cui-input::placeholder { color: #a3a3ab; }
+select.cui-input { appearance: none; cursor: pointer; }
+.cui-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a3a3ab;
+}
+.cui-sect-m { margin: 14px 0 8px; }
+.cui-seg button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #6d6d74;
+  border-radius: 999px;
+  padding: 5px 4px;
+  min-width: 0;
+}
+.cui-seg button:hover { color: #131316; }
+.cui-iconbtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6d6d74;
+  flex-shrink: 0;
+}
+.cui-iconbtn:hover { background: #f0f0f3; color: #131316; }
+.cui-stage-dots {
+  background-color: #e9e9ed;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
 /* ---- Inui theme tokens (Framer-like dark) ---- */
 .inu-input {
   width: 100%;

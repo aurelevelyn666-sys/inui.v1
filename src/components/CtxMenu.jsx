@@ -45,17 +45,17 @@ export default function CtxMenu({ x, y, tag, locked, canPaste, onAction, onClose
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
       <div
-        className="fixed z-50 w-52 bg-[#ffffff] border border-black/10 rounded-xl p-1.5 shadow-2xl"
+        className="fixed z-50 w-52 cui-card p-1.5"
         style={{ left, top }}
         role="menu"
         aria-label={'Actions for <' + tag + '>'}
       >
-        <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-zinc-500 truncate">
+        <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider cui-faint truncate">
           &lt;{tag}&gt;
         </div>
         {items.map((it, i) =>
           it.sep ? (
-            <div key={'s' + i} className="h-px bg-black/5 my-1" />
+            <div key={'s' + i} className="h-px bg-[rgba(0,0,0,0.06)] my-1" />
           ) : (
             <button
               key={it.op}
@@ -68,10 +68,10 @@ export default function CtxMenu({ x, y, tag, locked, canPaste, onAction, onClose
               }}
               className={`w-full flex items-center gap-2.5 text-[12px] rounded-lg px-2.5 py-[7px] transition-colors ${
                 it.hot
-                  ? 'bg-black text-white font-medium hover:bg-zinc-800'
+                  ? 'cui-btn'
                   : it.danger
-                    ? 'text-zinc-600 hover:bg-red-500/15 hover:text-red-300'
-                    : 'text-zinc-600 hover:bg-black/5 hover:text-black'
+                    ? 'cui-sub hover:bg-red-500/15 hover:text-red-600'
+                    : 'cui-sub hover:bg-[#f0f0f3] hover:text-black'
               } disabled:opacity-35`}
             >
               <it.icon size={14} className="shrink-0 opacity-80" />
