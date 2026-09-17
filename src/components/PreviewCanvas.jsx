@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Play, RefreshCw, ExternalLink, Download, AlertTriangle, X, Plus, FolderDown
+  Play, RefreshCw, ExternalLink, Download, AlertTriangle, X, Plus, FolderDown, MousePointerClick
 } from 'lucide-react';
 import { buildSrcDoc } from '../lib/files';
 import { openBlobTab } from '../lib/zip.js';
 import CtxMenu from './CtxMenu.jsx';
+
+const HINT_KEY = 'inui.canvasHint.v1';
 
 const WIDTHS = [
   { id: 'desktop', label: 'Desktop', width: 1200 },
@@ -35,6 +37,28 @@ export default function PreviewCanvas(props) {
   // grows forever ("memanjang sendiri"). Stable viewport => stable 100vh.
   const [stageH, setStageH] = useState(800);
   const [menu, setMenu] = useState(null);
+  // First-run coachmark: canvas editing is undiscoverable otherwise. Shows
+  // until dismissed or the first selection (which proves the lesson landed),
+  // then never again (persisted).
+  const [hintSeen, setHintSeen] = useState(() => {
+    try {
+      return localStorage.getItem(HINT_KEY) === 'seen';
+    } catch {
+      return true;
+    }
+  });
+  const dismissHint = () => {
+    setHintSeen(true);
+    try {
+      localStorage.setItem(HINT_KEY, 'seen');
+    } catch {
+      /* noop */
+    }
+  };
+  useEffect(() => {
+    if (selection) dismissHint();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection]);
   // Frame handshake: every srcDoc gets a fresh unguessable nonce, passed via
   // `inui:init` and echoed back on every frame message. Anything without the
   // current nonce (forged commands from page code, or a stale document from
@@ -373,6 +397,21 @@ export default function PreviewCanvas(props) {
           onAction={(op) => cb.current.onCmdRequest && cb.current.onCmdRequest(op, menu.selector)}
           onClose={() => setMenu(null)}
         />
+      )}
+
+      {!hintSeen && !selection && !built.error && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-zinc-900 text-white text-[12px] rounded-full pl-3 pr-1.5 py-1.5 shadow-2xl max-w-[92%]">
+          <MousePointerClick size={13} className="shrink-0" />
+          <span className="truncate">Click any element to select it — drag to move, double-click text to edit, right-click for more</span>
+          <button
+            onClick={dismissHint}
+            title="Dismiss"
+            aria-label="Dismiss canvas hint"
+            className="w-6 h-6 rounded-full hover:bg-white/15 flex items-center justify-center shrink-0"
+          >
+            <X size={12} />
+          </button>
+        </div>
       )}
 
       {/* runtime errors */}

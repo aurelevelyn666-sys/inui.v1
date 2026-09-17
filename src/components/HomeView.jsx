@@ -100,14 +100,16 @@ export default function HomeView(props) {
   return (
     <div className="flex-1 min-w-0 flex flex-col bg-[#fafafa] min-h-0">
       {/* top bar */}
-      <div className="h-14 shrink-0 flex items-center gap-2 px-5">
+      <div className="h-14 shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5">
         <span className="text-[14px] font-medium text-zinc-800">Inui</span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={onOpenSettings}
-            className="h-8 flex items-center gap-1.5 text-[12px] text-zinc-700 bg-white border border-black/[0.08] rounded-full px-3.5 hover:border-black/20"
+            title="Configuration"
+            aria-label="Configuration"
+            className="h-8 flex items-center gap-1.5 text-[12px] text-zinc-700 bg-white border border-black/[0.08] rounded-full px-2.5 sm:px-3.5 hover:border-black/20"
           >
-            Configuration <Settings size={12} />
+            <span className="hidden min-[420px]:inline">Configuration</span> <Settings size={12} />
           </button>
           <button
             onClick={() => {
@@ -124,9 +126,11 @@ export default function HomeView(props) {
                 /* ignore */
               }
             }}
-            className="h-8 flex items-center gap-1.5 text-[12px] text-zinc-700 bg-white border border-black/[0.08] rounded-full px-3.5 hover:border-black/20"
+            className="h-8 flex items-center gap-1.5 text-[12px] text-zinc-700 bg-white border border-black/[0.08] rounded-full px-2.5 sm:px-3.5 hover:border-black/20"
+            title="Share"
+            aria-label="Share"
           >
-            Share <Share size={12} />
+            <span className="hidden min-[420px]:inline">Share</span> <Share size={12} />
           </button>
           <button
             onClick={() => {
@@ -141,10 +145,11 @@ export default function HomeView(props) {
               }
               setMicOn(false);
             }}
-            className="h-8 flex items-center gap-1.5 text-[12px] font-medium bg-[#101014] text-white rounded-full px-3.5 hover:bg-black"
+            className="h-8 flex items-center gap-1.5 text-[12px] font-medium bg-[#101014] text-white rounded-full px-2.5 sm:px-3.5 hover:bg-black"
             title="Start a new chat"
+            aria-label="Start a new chat"
           >
-            New Chat <Plus size={12} />
+            <span className="hidden min-[420px]:inline">New Chat</span> <Plus size={12} />
           </button>
         </div>
       </div>
@@ -283,7 +288,7 @@ export default function HomeView(props) {
                       <span key={i} className="w-3.5 h-3.5 rounded-full border border-white" style={{ background: c }} />
                     ))}
                   </span>
-                  <span>Select Source</span>
+                  <span>Palette{palette ? ': ' + palette.name : ''}</span>
                 </button>
                 {palOpen && (
                   <>

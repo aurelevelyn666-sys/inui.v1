@@ -112,7 +112,7 @@ function LayerNode({ node, depth, onSelect, selectedSel, lockedMap, hiddenMap, o
             e.stopPropagation();
             onToggleHide(node.selector);
           }}
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 text-zinc-500 hover:text-black shrink-0"
+          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-zinc-500 hover:text-black shrink-0"
         >
           {isHidden ? <EyeOff size={11} /> : <Eye size={11} />}
         </button>
@@ -123,7 +123,7 @@ function LayerNode({ node, depth, onSelect, selectedSel, lockedMap, hiddenMap, o
             e.stopPropagation();
             onToggleLock(node.selector);
           }}
-          className={`shrink-0 ${isLocked ? 'text-zinc-900' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 text-zinc-500 hover:text-black'}`}
+          className={`shrink-0 ${isLocked ? 'text-zinc-900' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-zinc-500 hover:text-black'}`}
         >
           {isLocked ? <Lock size={11} /> : <LockOpen size={11} />}
         </button>

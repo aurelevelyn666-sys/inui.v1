@@ -193,7 +193,7 @@ export default function ConvoSidebar(props) {
                     }}
                     title="Delete conversation"
                     aria-label={'Delete ' + (c.title || 'New chat')}
-                    className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 text-zinc-400 hover:text-red-500 shrink-0 p-0.5"
+                    className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100 text-zinc-400 hover:text-red-500 shrink-0 p-0.5"
                   >
                     <span className="text-[11px] leading-none">···</span>
                   </button>
