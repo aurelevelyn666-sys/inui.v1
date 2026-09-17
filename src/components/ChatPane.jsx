@@ -472,7 +472,7 @@ export default function ChatPane(props) {
             )}
           </div>
           <div ref={bottomRef} />
-          <div className={pageScroll ? 'sticky bottom-0 z-10 bg-[#fafafa]/95 backdrop-blur-md p-3 border-t border-black/[0.06]' : 'p-3 border-t border-black/[0.06]'}>
+          <div className={pageScroll ? 'sticky bottom-0 z-10 bg-[#fafafa]/95 dark:bg-[#101014]/95 backdrop-blur-md p-3 border-t border-black/[0.06]' : 'p-3 border-t border-black/[0.06]'}>
             <div className="bg-[#ffffff] border border-black/[0.08] rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.04)] px-3.5 pt-3 pb-2.5 focus-within:border-black/20 transition-colors">
               <input
                 type="file"
