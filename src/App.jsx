@@ -1011,7 +1011,9 @@ export default function App() {
       // Transient: guidance only, never persisted to history (a blocked send
       // must not leave a hollow "New chat" entry behind).
       pushMsgs([{ role: 'assistant', content: 'Set your Base URL + API key + Model ID first (gear icon, top right).', error: true, transient: true }]);
-      setView('chat');
+      // Stay where the user is: a send from the canvas thread must not yank
+      // them back to the main chat view (same below for real runs).
+      if (view !== 'canvas') setView('chat');
       setSettingsOpen(true);
       return;
     }
@@ -1022,7 +1024,7 @@ export default function App() {
       return;
     }
     const mode = forceMode || composerMode;
-    setView('chat');
+    if (view !== 'canvas') setView('chat');
     setPaneTab('chat');
     pushMsgs([{ role: 'user', content: prompt, ...(attachments?.length ? { attachments } : {}) }]);
     if (mode === 'image') await runImage(prompt);
