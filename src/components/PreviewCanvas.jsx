@@ -394,7 +394,7 @@ export default function PreviewCanvas(props) {
           tag={menu.tag}
           locked={menu.locked}
           canPaste={canPaste}
-          onAction={(op) => cb.current.onCmdRequest && cb.current.onCmdRequest(op, menu.selector)}
+          onAction={(op) => cb.current.onCmdRequest && cb.current.onCmdRequest(op, menu.selector, { tag: menu.tag })}
           onClose={() => setMenu(null)}
         />
       )}

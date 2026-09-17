@@ -1,17 +1,21 @@
 import { useEffect } from 'react';
 import {
   ArrowUp, ChevronsUp, ArrowDown, ChevronsDown, Trash2, Copy,
-  Lock, LockOpen, Clipboard, Group, Ungroup, MessageSquare
+  Lock, LockOpen, Clipboard, Group, Ungroup, MessageSquare,
+  Sparkles, EyeOff
 } from 'lucide-react';
 
 export default function CtxMenu({ x, y, tag, locked, canPaste, onAction, onClose }) {
   const items = [
+    { op: 'agent', icon: Sparkles, label: 'Add to Agent', hot: true },
+    { sep: true },
     { op: 'forward', icon: ArrowUp, label: 'Bring forward' },
     { op: 'front', icon: ChevronsUp, label: 'Bring to front' },
     { op: 'backward', icon: ArrowDown, label: 'Send backward' },
     { op: 'back', icon: ChevronsDown, label: 'Send to back' },
     { sep: true },
     { op: 'delete', icon: Trash2, label: 'Delete', danger: true },
+    { op: 'hide', icon: EyeOff, label: 'Hide' },
     { op: 'duplicate', icon: Copy, label: 'Duplicate' },
     { op: locked ? 'unlock' : 'lock', icon: locked ? LockOpen : Lock, label: locked ? 'Unlock' : 'Lock', hot: !locked },
     { sep: true },

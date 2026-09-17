@@ -1551,13 +1551,31 @@ export default function App() {
   };
 
   // ---------- canvas ops (context menu, layers) ----------
-  const cmd = (op, selector) => {
+  const cmd = (op, selector, info) => {
     if (op === 'comment') {
       const text = typeof window !== 'undefined' ? window.prompt('Comment on <' + (selection?.tag || 'element') + '>:') : null;
       if (text && text.trim()) {
         setComments((c) => [...c, { id: nid(), selector: selector || selection?.selector, text: text.trim() }]);
         showToast('Comment added — see Layers tab');
       }
+      return;
+    }
+    // Right-click → agent: pin the element as agent scope and open the Agent
+    // tab, so the user can describe the edit right away (Framer-style).
+    if (op === 'agent' && selector) {
+      const tag = (info && info.tag) || selection?.tag || 'element';
+      setPinned({
+        selector,
+        tag,
+        text: selection && selection.selector === selector ? selection.text || '' : '',
+        className: selection && selection.selector === selector ? selection.className || '' : ''
+      });
+      setRightTab('agent');
+      showToast('Pinned <' + tag + '> to the agent — describe the edit');
+      return;
+    }
+    if (op === 'hide' && selector) {
+      toggleHide(selector);
       return;
     }
     if (op === 'paste' && !copiedRef.current) {
@@ -2081,7 +2099,7 @@ export default function App() {
             }}
             onChanged={() => setLayersRequest((k) => k + 1)}
             onLockedTap={() => showToast('Layer is locked — unlock it in Layers or right-click')}
-            onCmdRequest={(op, selector) => cmd(op, selector)}
+            onCmdRequest={(op, selector, info) => cmd(op, selector, info)}
             onComment={() => {
               if (!selection) {
                 showToast('Select an element first, then comment');
