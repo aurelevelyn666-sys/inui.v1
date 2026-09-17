@@ -33,7 +33,13 @@ function readConvos() {
     const a = JSON.parse(localStorage.getItem(CONVO_KEY) || '[]');
     if (!Array.isArray(a)) return [];
     // Drop empty husks (abandoned "New chat" entries) — they are noise in history.
-    return a.filter((c) => (c.messages?.length || 0) > 0 || Object.keys(c.files || {}).length > 2);
+    // Also drop hollow ones: no user message and starter files (e.g. a send
+    // blocked for a missing API key leaves only an error note behind).
+    return a.filter(
+      (c) =>
+        ((c.messages?.length || 0) > 0 || Object.keys(c.files || {}).length > 2) &&
+        ((c.messages || []).some((m) => m.role === 'user') || Object.keys(c.files || {}).length > 2)
+    );
   } catch {
     return [];
   }
@@ -155,6 +161,12 @@ export default function App() {
   const buildList = () => {
     let list = convosRef.current.slice();
     let id = activeConvoIdRef.current;
+    // Transient-only sessions (e.g. a send blocked for a missing API key)
+    // are guidance, not history — never create an entry for them.
+    const memorable = stripMsgs(messagesRef.current).filter((m) => !m.transient);
+    if (!memorable.length && Object.keys(filesRef.current).length <= 2) {
+      return list.slice(0, 20);
+    }
     if (!id) {
       id = nid();
       setActiveConvoId(id);
@@ -165,7 +177,7 @@ export default function App() {
       id,
       title: titleFor(messagesRef.current),
       updatedAt: Date.now(),
-      messages: stripMsgs(messagesRef.current),
+      messages: memorable,
       files: { ...filesRef.current },
       overrides: JSON.parse(JSON.stringify(overridesRef.current || { styles: {}, texts: {} }))
     };
@@ -892,7 +904,9 @@ export default function App() {
 
   const run = async (prompt, forceMode, attachments) => {
     if (!settingsRef.current.apiKey && !isLocal(settingsRef.current.baseUrl)) {
-      pushMsgs([{ role: 'assistant', content: 'Set your Base URL + API key + Model ID first (gear icon, top right).', error: true }]);
+      // Transient: guidance only, never persisted to history (a blocked send
+      // must not leave a hollow "New chat" entry behind).
+      pushMsgs([{ role: 'assistant', content: 'Set your Base URL + API key + Model ID first (gear icon, top right).', error: true, transient: true }]);
       setView('chat');
       setSettingsOpen(true);
       return;

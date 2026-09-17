@@ -66,7 +66,7 @@ body {
 ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ---- Orbita dark mode (real theme, toggled via html.dark) ----
+/* ---- Inui dark mode (real theme, toggled via html.dark) ----
    Overrides the concrete Tailwind utilities used across the app so every
    screen (home, chat, builds, templates, modals) inverts coherently. */
 html.dark body { background: #101014; color: #e4e4e7; }

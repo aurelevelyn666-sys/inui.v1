@@ -210,7 +210,7 @@ export default function ConvoSidebar(props) {
           onClick={onOpenSettings}
           className="w-full flex items-center justify-center gap-1.5 text-[13px] font-medium border border-black/[0.08] rounded-xl py-2.5 text-zinc-700 hover:border-black/20 transition-colors"
         >
-          Upgrade to Pro
+          {keyOn ? 'Configuration' : 'Add API key'}
         </button>
         <div className="mt-2.5 flex items-center gap-2.5 px-1">
           <span className="relative w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-xs text-zinc-600 shrink-0 font-semibold">

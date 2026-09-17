@@ -101,8 +101,7 @@ export default function HomeView(props) {
     <div className="flex-1 min-w-0 flex flex-col bg-[#fafafa] min-h-0">
       {/* top bar */}
       <div className="h-14 shrink-0 flex items-center gap-2 px-5">
-        <span className="text-[14px] font-medium text-zinc-800">Orbita</span>
-        <span className="text-[10px] text-zinc-500 border border-black/10 rounded-md px-1.5 py-px bg-white">Plus</span>
+        <span className="text-[14px] font-medium text-zinc-800">Inui</span>
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={onOpenSettings}
@@ -364,7 +363,7 @@ export default function HomeView(props) {
 
           <p className="text-center text-[11px] text-zinc-400 mt-4">
             Inui may display inaccurate info, so please double check the response.{' '}
-            <span className="underline">Your Privacy</span> & <span className="underline">Orbita GPT</span>
+            <span className="underline">Your Privacy</span> & <span className="underline">Inui</span>
           </p>
 
           {!hasKey && (

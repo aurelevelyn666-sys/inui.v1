@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MessagesSquare, PanelsTopLeft, Zap, Blocks, CalendarDays, Users, Settings, Sun, Moon } from 'lucide-react';
 
-// Slim icon rail on the far left (Orbita-style). One active item, a settings
+// Slim icon rail on the far left. One active item, a settings
 // popover at the bottom, and the account avatar under it.
 const RAIL_ITEMS = [
   { id: 'chat', icon: MessagesSquare, label: 'Chat' },
