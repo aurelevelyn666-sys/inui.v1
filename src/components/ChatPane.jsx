@@ -130,8 +130,8 @@ function CopyBtn({ text, label }) {
 
 // Manus-style next actions under the latest build: contextual follow-ups so
 // the user never wonders what to ask for. One click sends the prompt.
-function FollowUps({ files, onSend }) {
-  const items = suggestFollowUps(files || {});
+function FollowUps({ files, lastUserPrompt, onSend }) {
+  const items = suggestFollowUps(files || {}, lastUserPrompt);
   if (!items.length || !onSend) return null;
   return (
     <div className="flex flex-col gap-1.5 mt-2">
@@ -434,7 +434,11 @@ export default function ChatPane(props) {
                   </div>
                 )}
                 {isLast && m.role === 'assistant' && !m.error && (m.files || []).length > 0 && !streaming && (
-                  <FollowUps files={files} onSend={onSend} />
+                  <FollowUps
+                    files={files}
+                    lastUserPrompt={[...messages].reverse().find((x) => x.role === 'user')?.content}
+                    onSend={onSend}
+                  />
                 )}
                 <div className="flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                   <CopyBtn text={m.role === 'user' ? m.content : displayContent(m)} />

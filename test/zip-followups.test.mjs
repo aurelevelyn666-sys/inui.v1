@@ -37,16 +37,23 @@ test('exportProjectZip: runnable index.html or honest error', () => {
 test('suggestFollowUps: contextual, max 3', () => {
   assert.deepEqual(F.suggestFollowUps({}), []);
   const single = F.suggestFollowUps({ '/App.jsx': 'hero', '/index.css': 'x' });
-  assert.ok(single.some((s) => s.id === 'split'));
+  assert.ok(single.some((s) => s.id === 'scaffold'));
   assert.ok(single.length <= 3);
   const full = F.suggestFollowUps({
     '/App.jsx': 'pricing testimonials faq footer contact',
     '/components/A.jsx': 'x',
     '/index.css': 'x'
   });
-  assert.ok(full.every((s) => s.id !== 'split'));
+  assert.ok(full.every((s) => s.id !== 'split' && s.id !== 'scaffold'));
   assert.ok(full.some((s) => s.id === 'mobile'));
   assert.ok(full.length <= 3);
   const labels = F.suggestFollowUps({ '/App.jsx': 'nothing here', '/index.css': 'x' }).map((s) => s.label);
   assert.ok(labels.includes('Add a pricing section'));
+});
+
+test('suggestFollowUps: single-file request honored, no upsell', () => {
+  const req = F.suggestFollowUps({ '/App.jsx': 'hero', '/index.css': 'x' }, 'just give me a single file please');
+  assert.ok(req.every((s) => s.id !== 'scaffold'));
+  const idReq = F.suggestFollowUps({ '/App.jsx': 'hero' }, 'buatkan satu file saja');
+  assert.ok(idReq.every((s) => s.id !== 'scaffold'));
 });

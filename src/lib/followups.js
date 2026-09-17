@@ -10,19 +10,32 @@ const SECTION_IDEAS = [
   { key: 'contact', label: 'Add a contact section', match: /contact/i, prompt: 'Add a contact section with a validated form (name, email, message) and contact details, matching the existing design system.' }
 ];
 
-export function suggestFollowUps(files) {
+// Requests for a single file are honored as-is — never upsell a scaffold.
+const SINGLE_RE = /single(\s|-)?file|one(\s|-)?file|satu file|1 file|single component|cuma (satu|1)\b/i;
+
+export function suggestFollowUps(files, lastUserPrompt) {
   const entries = Object.entries(files || {});
   if (!entries.length) return [];
   const all = entries.map(([, c]) => c).join('\n');
   const out = [];
+  const jsFiles = entries.filter(([p]) => p.endsWith('.jsx') || p.endsWith('.js'));
+
+  // 0) model returned one file unasked → offer the full scaffold in one tap
+  if (jsFiles.length <= 1 && !SINGLE_RE.test(String(lastUserPrompt || ''))) {
+    out.push({
+      id: 'scaffold',
+      label: 'Expand to full scaffold',
+      prompt: 'Expand this into a complete multi-file scaffold: /App.jsx composing sections, one component per file under /components/, shared logic under /hooks/ and /lib/ where it fits, styles in /index.css. Keep the design identical.'
+    });
+  }
 
   // 1) first missing section wins (concrete, visible progress)
   const missing = SECTION_IDEAS.find((s) => !s.match.test(all));
   if (missing) out.push({ id: 'sec-' + missing.key, label: missing.label, prompt: missing.prompt });
 
-  // 2) single-file project → split into components (multi-file rule)
-  const jsFiles = entries.filter(([p]) => p.endsWith('.jsx') || p.endsWith('.js'));
-  if (jsFiles.length <= 1) {
+  // 2) single-file project → split into components (multi-file rule).
+  // Skipped when the scaffold upsell above already covers it.
+  if (jsFiles.length <= 1 && !out.some((s) => s.id === 'scaffold')) {
     out.push({
       id: 'split',
       label: 'Split into components',
